@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Living World Edition</title>
+    <title>Birth Pulse - Pro Aesthetic Edition</title>
     <style>
         :root {
-            --bg-color: #050a12;
+            --bg-color: #050a12; /* Arka plan: Derin uzay siyahı */
             --deep-orange: #f59e0b; 
             --map-blue: #38bdf8;   
-            --land-fill: #0d1726;
-            --border-color: rgba(56, 189, 248, 0.2);
+            --land-fill: #1a2b42; /* Karalar: Daha aydınlık, derin navy */
+            --border-color: #0a1424; /* Sınırlar: Pastel ve koyu lacivert */
         }
         body, html {
             margin: 0; padding: 0;
@@ -26,13 +26,10 @@
             box-sizing: border-box;
             align-items: center;
         }
-        .stats-panel {
-            flex: 0 0 30%;
-            z-index: 20;
-        }
-        .label { font-size: 0.85rem; color: var(--map-blue); letter-spacing: 4px; text-transform: uppercase; }
+        .stats-panel { flex: 0 0 28%; z-index: 20; }
+        .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
         .count {
-            font-size: 7.5rem;
+            font-size: 6.5rem;
             font-weight: 900;
             color: var(--deep-orange);
             line-height: 1;
@@ -40,43 +37,34 @@
             margin: 10px 0;
             font-variant-numeric: tabular-nums;
         }
-        .sub-text { font-size: 1.2rem; color: var(--map-blue); opacity: 0.5; }
-        .progress-box { width: 100%; margin-top: 50px; position: relative; }
-        .bar-container { height: 3px; background: #0f172a; border-radius: 10px; }
+        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
+        .progress-box { width: 100%; margin-top: 40px; position: relative; }
+        .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
         .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
-        .clock-wrapper { position: absolute; top: 15px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
-        #clock { color: var(--deep-orange); font-size: 1rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
+        #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
 
         .map-panel {
-            flex: 1;
-            height: 85%;
-            position: relative;
-            margin-left: 40px;
-            display: flex;
-            align-items: center; justify-content: center;
+            flex: 1; height: 80%;
+            position: relative; margin-left: 40px;
+            display: flex; align-items: center; justify-content: center;
         }
         .map-wrapper { 
             position: relative; 
             width: 100%; 
-            aspect-ratio: 2/1;
+            aspect-ratio: 2.5 / 1; 
         }
-        canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        #landCanvas { z-index: 1; }
-        #borderCanvas { z-index: 2; }
-        #highlightCanvas { z-index: 3; } /* Patlamaların olduğu katman */
+        canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        #landCanvas { z-index: 1; opacity: 0.85; }
+        #borderCanvas { z-index: 2; opacity: 1; }
+        #highlightCanvas { z-index: 3; }
         
         #loading-overlay {
             position: absolute; inset: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; background: var(--bg-color);
             z-index: 2000; color: var(--map-blue);
         }
-        .loader-bar-bg { width: 250px; height: 2px; background: #111d2e; margin-top: 20px; overflow: hidden; }
+        .loader-bar-bg { width: 200px; height: 2px; background: #111d2e; margin-top: 20px; overflow: hidden; }
         .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); }
     </style>
 </head>
@@ -96,9 +84,9 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 16px;">CALIBRATING WORLD NERVE SYSTEM</div>
+                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">AESTHETIC CALIBRATION</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 10px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Indexing Country Geometries...</div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Applying Pastel Borders...</div>
                 </div>
                 <canvas id="landCanvas"></canvas>
                 <canvas id="borderCanvas"></canvas>
@@ -108,7 +96,6 @@
     </div>
 
     <script>
-        // --- DATASET: 240+ ÜLKE DOĞUM PAYLARI (%) ---
         const countryShares = {
             IND: 17.55, CHN: 6.85, PAK: 5.35, IDN: 3.25, BGD: 2.15, NGA: 6.22, ETH: 3.35, COD: 3.42, EGY: 1.58, USA: 2.75, BRA: 1.88, MEX: 1.32, RUS: 0.88, TUR: 0.72, IRN: 0.71, DEU: 0.55, FRA: 0.52, GBR: 0.51, JPN: 0.42, PHL: 1.15, VNM: 0.92, THA: 0.35, KOR: 0.15, AFG: 1.12, IRQ: 0.82, SAU: 0.45, UZB: 0.61, MMR: 0.58, MYS: 0.32, KAZ: 0.28, CAN: 0.25, AUS: 0.22, TZA: 1.85, KEN: 0.95, ZAF: 0.88, UGA: 1.42, SDN: 1.35, DZA: 0.62, MAR: 0.45, GHA: 0.71, MOZ: 0.91, AGO: 1.05, CIV: 0.72, MDG: 0.75, CMR: 0.72, NER: 0.85, BFA: 0.58, MLI: 0.75, MWI: 0.48, ZMB: 0.55, SOM: 0.52, SEN: 0.45, TCD: 0.65, GIN: 0.38, RWA: 0.25, BEN: 0.35, TUN: 0.11, BDI: 0.35, SSD: 0.38, SLE: 0.22, TGO: 0.21, LBY: 0.08, COG: 0.18, ERI: 0.09, LBR: 0.15, CAF: 0.14, MRT: 0.12, NAM: 0.06, BWA: 0.05, GMB: 0.08, GNB: 0.06, LSO: 0.04, GAB: 0.04, MUS: 0.01, SWZ: 0.03, DJB: 0.02, COM: 0.02, CPV: 0.01, STP: 0.008, SYC: 0.002, ESP: 0.25, ITA: 0.3, POL: 0.22, UKR: 0.12, COL: 0.45, ARG: 0.42, PER: 0.35, VEN: 0.3, CHL: 0.15, GTM: 0.32, ECU: 0.2, BOL: 0.18, HTI: 0.22, CUB: 0.08, DOM: 0.14, HND: 0.15, PRY: 0.11, SLV: 0.08, NIC: 0.09, CRC: 0.04, PAN: 0.05, PRT: 0.06, ROU: 0.1, GRC: 0.05, ISR: 0.25, PSE: 0.22, SYR: 0.35, JOR: 0.15, LBN: 0.06, KWT: 0.04, ARE: 0.08, QAT: 0.02, OMN: 0.06, YEM: 0.95, NPL: 0.38, LKA: 0.15, KHM: 0.25, LAO: 0.12, MNG: 0.05, PNG: 0.22, NZL: 0.05, FJI: 0.01, JAM: 0.03, TTO: 0.01, GUY: 0.01, SUR: 0.01, ISL: 0.005, LUX: 0.005, MLT: 0.003, GRL: 0.001, ESH: 0.01, TWN: 0.1, HKG: 0.03, SGP: 0.03, PRK: 0.18, KAZ: 0.28, TJK: 0.18, KGZ: 0.12, TKM: 0.08, ARM: 0.03, AZE: 0.1, GEO: 0.04, CYP: 0.01, BTN: 0.01, MDV: 0.005, BRN: 0.005, TLS: 0.03, VUT: 0.01, SLB: 0.01, WSM: 0.005, KIR: 0.003, TON: 0.002, FSM: 0.002, MHL: 0.001, PLW: 0.0005, NRU: 0.0005, TUV: 0.0002, BLZ: 0.008, BHS: 0.005, BRB: 0.002, LCA: 0.001, GRD: 0.001, VCT: 0.001, KNA: 0.0005, ATG: 0.001, DMA: 0.0005, SMR: 0.0001, MCO: 0.0001, VAT: 0.0, LIE: 0.0001, AND: 0.0001
         };
@@ -116,8 +103,12 @@
         const DAILY_BIRTHS = 362737;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
         
-        let countryPaths = {}; // Path2D objeleri
-        let activeFlashes = []; // Mevcut patlamalar: [{iso, start}]
+        const LAT_TOP = 85;    
+        const LAT_BOTTOM = -58; 
+        const LAT_RANGE = LAT_TOP - LAT_BOTTOM;
+
+        let countryPaths = {};
+        let activeFlashes = []; 
         let countryList = [];
         let weights = [];
 
@@ -139,7 +130,9 @@
             .then(init);
 
         async function init(geo) {
-            const w = 2400, h = 1200;
+            const w = 2400; 
+            const h = Math.round(w / (360 / LAT_RANGE)); 
+            
             landCanvas.width = borderCanvas.width = highlightCanvas.width = w;
             landCanvas.height = borderCanvas.height = highlightCanvas.height = h;
 
@@ -147,21 +140,25 @@
             const bCtx = borderCanvas.getContext("2d");
 
             function project([lon, lat]) {
-                return [(lon + 180) / 360 * w, (90 - lat) / 180 * h];
+                const px = (lon + 180) / 360 * w;
+                const py = (LAT_TOP - lat) / LAT_RANGE * h;
+                return [px, py];
             }
 
             const features = geo.features;
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
                 const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || i.toString();
+
+                if (iso === "ATA" || f.properties.ADMIN === "Antarctica") continue;
+
                 const share = countryShares[iso] || 0.01;
                 countryList.push(iso);
                 weights.push(share);
 
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `POLYGONAL MAPPING: ${f.properties.ADMIN || iso}`;
+                loadStatusEl.innerText = `STYLING: ${f.properties.ADMIN || iso}`;
 
-                // Ülkenin Path2D nesnesini oluştur (Hızlı çizim için)
                 const p2d = new Path2D();
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
                 coords.forEach(poly => poly.forEach(ring => ring.forEach((p, idx) => {
@@ -170,14 +167,16 @@
                 })));
                 countryPaths[iso] = p2d;
 
-                // Statik haritayı çiz (Arka plan ve Sınır)
-                lCtx.fillStyle = "#0d1726";
+                // KARALARI AYDINLATTIK
+                lCtx.fillStyle = "#1a2b42"; 
                 lCtx.fill(p2d);
-                bCtx.strokeStyle = "rgba(56, 189, 248, 0.25)";
-                bCtx.lineWidth = 0.6;
+                
+                // SINIRLARI PASTEL-KOYU YAPTIK
+                bCtx.strokeStyle = "#0a1424"; 
+                bCtx.lineWidth = 0.8;
                 bCtx.stroke(p2d);
 
-                if (i % 30 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 40 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
             loadingOverlay.style.opacity = "0";
@@ -196,7 +195,6 @@
             clockEl.innerText = now.toLocaleTimeString('en-GB');
         }
 
-        // Bir ülkede "patlama" tetikle
         function triggerFlash() {
             const sumW = weights.reduce((a, b) => a + b, 0);
             let r = Math.random() * sumW, picked = countryList[0];
@@ -209,41 +207,27 @@
         let lastT = Date.now(), carry = 0;
         function startSimulation() {
             setInterval(updateUI, 100);
-
             function loop() {
                 const now = Date.now();
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
+                while (carry >= 1) { triggerFlash(); carry--; }
 
-                while (carry >= 1) {
-                    triggerFlash();
-                    carry--;
-                }
-
-                // Highlight Katmanını Temizle ve Güncel Flaşları Çiz
                 hCtx.clearRect(0, 0, 2400, 1200);
-                const flashDuration = 1200; // Bir flaşın sönme süresi (ms)
-
+                const flashDuration = 1200; 
                 activeFlashes = activeFlashes.filter(f => {
                     const age = now - f.start;
                     if (age >= flashDuration) return false;
-
-                    const opacity = Math.pow(1 - age / flashDuration, 2); // Üstel sönme (daha organik)
-                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.7})`;
-                    
-                    // Ülkenin tamamını aydınlat
-                    if (countryPaths[f.iso]) {
-                        hCtx.fill(countryPaths[f.iso]);
-                    }
+                    const opacity = Math.pow(1 - age / flashDuration, 2);
+                    // Turuncu flaşlar karalar aydınlandığı için daha doygun görünecek
+                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.8})`;
+                    if (countryPaths[f.iso]) hCtx.fill(countryPaths[f.iso]);
                     return true;
                 });
-
                 requestAnimationFrame(loop);
             }
             loop();
         }
-
-        // Gece yarısı yenileme
         setInterval(() => {
             if(new Date().toLocaleTimeString('en-GB') === "00:00:00") location.reload();
         }, 1000);
