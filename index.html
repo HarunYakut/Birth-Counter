@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Global Coverage Pro</title>
+    <title>Birth Pulse - Lite & Fast Edition</title>
     <style>
         :root {
             --bg-color: #08101b;
             --accent-cyan: #22d3ee;
-            --birth-orange: #fbbf24; 
+            --birth-yellow: #fbbf24; /* İstediğin parlak sarı/amber */
             --text-gray: #94a3b8;
-            --dot-base: #566a85; /* Haritayı iyice görünür yaptık */
+            --bar-bg: #111d2e;
         }
 
         body, html {
@@ -25,27 +25,29 @@
         .container {
             display: flex;
             width: 100%; height: 100%;
-            padding: 0 40px;
+            padding: 0 50px;
             box-sizing: border-box;
             align-items: center;
         }
 
+        /* Sol Panel - İstatistikler */
         .stats-panel {
-            flex: 0 0 38%;
+            flex: 0 0 40%;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            z-index: 10;
         }
 
         .count {
-            font-size: 10.5rem;
+            font-size: 11rem;
             font-weight: 900;
             color: var(--accent-cyan);
             line-height: 1;
-            filter: drop-shadow(0 0 25px rgba(34, 211, 238, 0.4));
+            filter: drop-shadow(0 0 20px rgba(34, 211, 238, 0.4));
+            margin-bottom: 10px;
         }
 
+        /* Zaman Barı ve Kayan Saat */
         .progress-box {
             width: 90%;
             margin-top: 40px;
@@ -53,9 +55,10 @@
         }
 
         .bar-container {
-            height: 6px;
-            background: #111d2e;
+            height: 8px;
+            background: var(--bar-bg);
             border-radius: 10px;
+            overflow: hidden;
         }
 
         .bar-fill {
@@ -69,7 +72,7 @@
 
         .clock-wrapper {
             position: absolute;
-            top: 15px;
+            top: 18px;
             left: 0%;
             transform: translateX(-50%);
             white-space: nowrap;
@@ -78,22 +81,42 @@
 
         #clock {
             color: var(--accent-cyan);
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: bold;
+            font-variant-numeric: tabular-nums;
         }
 
+        /* Sağ Panel - Harita ve Bubblelar */
         .map-panel {
-            flex: 0 0 62%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            flex: 0 0 60%;
+            height: 90%;
+            position: relative;
+            /* Antarktika'yı kesmek için haritayı biraz büyütüp aşağı kaydırıyoruz */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
+            background-size: 115%;
+            background-repeat: no-repeat;
+            background-position: center 15%; 
+            opacity: 0.4;
+            filter: brightness(0.8) sepia(1) hue-rotate(160deg) saturate(1.5);
         }
 
-        #mapCanvas {
-            width: 100%;
-            height: 85%;
-            object-fit: contain;
+        /* Bubble Efekti */
+        .bubble {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--birth-yellow);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--birth-yellow), 0 0 30px var(--birth-yellow);
+            animation: bubbleAnim 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes bubbleAnim {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
         }
     </style>
 </head>
@@ -101,132 +124,93 @@
 
     <div class="container">
         <div class="stats-panel">
+            <div style="font-size: 1.6rem; color: var(--text-gray); letter-spacing: 5px; text-transform: uppercase;">World Births Today</div>
             <div class="count" id="birthCount">0</div>
             <div style="font-size: 1.8rem; color: var(--text-gray);">new lives welcomed today</div>
 
             <div class="progress-box">
                 <div class="bar-container"><div class="bar-fill" id="bar"></div></div>
                 <div class="clock-wrapper" id="clockWrapper"><span id="clock">00:00:00</span></div>
-                <div style="display:flex; justify-content: space-between; margin-top:35px; color:#475569; font-size:1rem; opacity:0.5;">
-                    <span>00:00</span><span>23:59</span>
-                </div>
             </div>
         </div>
 
-        <div class="map-panel">
-            <canvas id="mapCanvas"></canvas>
+        <div class="map-panel" id="map">
+            <!-- Baloncuklar buraya eklenecek -->
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('mapCanvas');
-        const ctx = canvas.getContext('2d', { alpha: false });
         const DAILY_BIRTHS = 385000;
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
 
-        let dots = [];
-        const dotGap = 3;
-
-        // GENİŞLETİLMİŞ DÜNYA LİSTESİ (80+ Ülke ve Bölge Koordinatları)
-        const countryData = [
-            {n: "India", x: 740, y: 240, w: 63}, {n: "China", x: 810, y: 190, w: 24},
-            {n: "Nigeria", x: 520, y: 310, w: 21}, {n: "Pakistan", x: 710, y: 220, w: 19},
-            {n: "Indonesia", x: 860, y: 340, w: 12}, {n: "USA", x: 230, y: 190, w: 10},
-            {n: "Brazil", x: 360, y: 370, w: 7}, {n: "Ethiopia", x: 575, y: 320, w: 11},
-            {n: "Bangladesh", x: 775, y: 240, w: 10}, {n: "DR Congo", x: 540, y: 360, w: 12},
-            {n: "Turkey", x: 565, y: 178, w: 3}, {n: "Egypt", x: 555, y: 235, w: 5},
-            {n: "Mexico", x: 190, y: 255, w: 5}, {n: "Philippines", x: 875, y: 280, w: 6},
-            {n: "Vietnam", x: 825, y: 265, w: 4}, {n: "Tanzania", x: 580, y: 380, w: 6},
-            {n: "Russia", x: 750, y: 90, w: 4}, {n: "Japan", x: 920, y: 185, w: 2},
-            {n: "Iran", x: 640, y: 205, w: 3}, {n: "Kenya", x: 585, y: 340, w: 4},
-            {n: "South Africa", x: 550, y: 450, w: 3}, {n: "Argentina", x: 315, y: 450, w: 2},
-            {n: "Germany", x: 515, y: 125, w: 2}, {n: "France", x: 490, y: 140, w: 2},
-            {n: "UK", x: 480, y: 115, w: 2}, {n: "Italy", x: 515, y: 160, w: 2},
-            {n: "Spain", x: 475, y: 175, w: 2}, {n: "Canada", x: 220, y: 100, w: 1},
-            {n: "Sudan", x: 555, y: 280, w: 4}, {n: "Uganda", x: 575, y: 345, w: 5},
-            {n: "Iraq", x: 615, y: 210, w: 3}, {n: "Afghanistan", x: 690, y: 205, w: 4},
-            {n: "Algeria", x: 490, y: 220, w: 2}, {n: "Morocco", x: 465, y: 210, w: 1},
-            {n: "Poland", x: 535, y: 120, w: 1}, {n: "Ukraine", x: 565, y: 125, w: 1},
-            {n: "Saudi Arabia", x: 600, y: 250, w: 2}, {n: "Thailand", x: 810, y: 275, w: 2},
-            {n: "Myanmar", x: 790, y: 255, w: 2}, {n: "Colombia", x: 295, y: 310, w: 2},
-            {n: "Peru", x: 285, y: 370, w: 1}, {n: "Venezuela", x: 310, y: 300, w: 1},
-            {n: "Angola", x: 530, y: 395, w: 3}, {n: "Mozambique", x: 590, y: 415, w: 3},
-            {n: "Ghana", x: 490, y: 320, w: 3}, {n: "Madagascar", x: 615, y: 425, w: 2},
-            {n: "Australia", x: 870, y: 420, w: 1}, {n: "Kazakhstan", x: 680, y: 130, w: 1},
-            {n: "Sweden", x: 520, y: 70, w: 1}, {n: "Norway", x: 500, y: 75, w: 0.5},
-            {n: "Chile", x: 300, y: 460, w: 1}, {n: "South Korea", x: 890, y: 195, w: 0.5},
-            {n: "Malaysia", x: 840, y: 325, w: 1}
+        // Nüfus ağırlıklı ve sadece karadaki koordinatlar (X, Y yüzdeleri)
+        const landZones = [
+            // Asya (Yüksek Ağırlık)
+            {x: 72, y: 35, w: 10}, {x: 78, y: 30, w: 10}, {x: 82, y: 40, w: 10}, {x: 75, y: 45, w: 10},
+            // Afrika (Yüksek Ağırlık)
+            {x: 52, y: 55, w: 8}, {x: 58, y: 65, w: 8}, {x: 48, y: 45, w: 8}, {x: 55, y: 40, w: 8},
+            // Amerika
+            {x: 25, y: 35, w: 5}, {x: 18, y: 25, w: 4}, {x: 32, y: 65, w: 5}, {x: 35, y: 75, w: 5},
+            // Avrupa
+            {x: 48, y: 28, w: 3}, {x: 52, y: 25, w: 3}, {x: 45, y: 22, w: 3},
+            // Okyanusya
+            {x: 85, y: 78, w: 2}
         ];
-
-        const mapImg = new Image();
-        mapImg.crossOrigin = "Anonymous";
-        mapImg.src = 'https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg';
-
-        mapImg.onload = () => {
-            canvas.width = 1000; canvas.height = 500;
-            const tempCanvas = document.createElement('canvas');
-            const tCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
-            tCtx.drawImage(mapImg, 0, 0, canvas.width, canvas.height);
-            const imgData = tCtx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-            for (let y = 0; y < canvas.height; y += dotGap) {
-                if (y > canvas.height * 0.81) continue; 
-                for (let x = 0; x < canvas.width; x += dotGap) {
-                    const index = (y * canvas.width + x) * 4;
-                    if (imgData[index + 3] > 100) dots.push({ x: x, y: y, active: 0 });
-                }
-            }
-            requestAnimationFrame(draw);
-        };
-
-        function draw() {
-            ctx.fillStyle = '#08101b';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            dots.forEach(dot => {
-                if (dot.active > 0) {
-                    ctx.fillStyle = `rgba(251, 191, 36, ${dot.active})`;
-                    dot.active -= 0.015;
-                } else {
-                    ctx.fillStyle = '#566a85'; 
-                }
-                ctx.fillRect(dot.x, dot.y, 1.7, 1.7);
-            });
-            requestAnimationFrame(draw);
-        }
-
-        function triggerBirth() {
-            if (dots.length === 0) return;
-            let totalWeight = countryData.reduce((s, c) => s + c.w, 0);
-            let randomNum = Math.random() * totalWeight;
-            let selected = countryData[0];
-            let sum = 0;
-            for(let c of countryData) {
-                sum += c.w;
-                if(randomNum <= sum) { selected = c; break; }
-            }
-            const radius = 10; // Ülke patlama çapı (daha küçük ve keskin)
-            dots.forEach(dot => {
-                const dist = Math.hypot(dot.x - selected.x, dot.y - selected.y);
-                if (dist < radius && Math.random() > 0.15) dot.active = 1.0;
-            });
-        }
 
         function updateUI() {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const passed = now - start;
-            document.getElementById('birthCount').innerText = Math.floor(passed * BIRTH_RATE).toLocaleString('en-US');
+            
+            // Sayı
+            const current = Math.floor(passed * BIRTH_RATE);
+            document.getElementById('birthCount').innerText = current.toLocaleString('en-US');
+            
+            // Bar ve Saat
             const percent = (passed / MS_DAY) * 100;
             document.getElementById('bar').style.width = percent + "%";
             document.getElementById('clockWrapper').style.left = percent + "%";
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
         }
 
+        function createBubble() {
+            const map = document.getElementById('map');
+            
+            // Ağırlıklı bölge seçimi
+            const totalW = landZones.reduce((s, z) => s + z.w, 0);
+            let r = Math.random() * totalW;
+            let zone = landZones[0];
+            for(let z of landZones) {
+                r -= z.w;
+                if(r <= 0) { zone = z; break; }
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            // Bölge içinde küçük doğal sapma
+            const jitterX = (Math.random() - 0.5) * 8;
+            const jitterY = (Math.random() - 0.5) * 8;
+            
+            bubble.style.left = (zone.x + jitterX) + "%";
+            bubble.style.top = (zone.y + jitterY) + "%";
+            
+            map.appendChild(bubble);
+            
+            // Performans için 2 saniye sonra sil
+            setTimeout(() => bubble.remove(), 2000);
+        }
+
+        // Akıcılık için güncellemeler
         setInterval(updateUI, 100);
-        setInterval(triggerBirth, 300);
-        setInterval(() => { if(new Date().getSeconds()==0 && new Date().getMinutes()==0 && new Date().getHours()==0) location.reload(); }, 1000);
+        setInterval(createBubble, 350); // Doğum frekansı
+
+        // Gece yarısı reset
+        setInterval(() => {
+            if(new Date().getHours()==0 && new Date().getMinutes()==0 && new Date().getSeconds()==0) location.reload();
+        }, 1000);
+
         updateUI();
     </script>
 </body>
