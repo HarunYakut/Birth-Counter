@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse Pro - 1920x540</title>
+    <title>Birth Pulse Pro - Floating Clock</title>
     <style>
         :root {
-            --bg-color: #0c1e35; /* Beğendiğin koyu lacivert */
-            --accent-cyan: #22d3ee; /* Pastel turkuaz */
+            --bg-color: #0c1e35;
+            --accent-cyan: #22d3ee;
             --text-gray: #94a3b8;
             --bar-bg: #1e3a5f;
         }
@@ -21,7 +21,6 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* Ana Konteyner - 1920x540 için Yatay Yerleşim */
         .dashboard {
             display: flex;
             width: 100%;
@@ -31,7 +30,6 @@
             align-items: center;
         }
 
-        /* Sol Panel (Sayılar) */
         .stats-panel {
             flex: 0 0 42%;
             display: flex;
@@ -48,7 +46,7 @@
         }
 
         .count {
-            font-size: 10.5rem; /* Ekranına göre devasa sayı */
+            font-size: 10.5rem;
             font-weight: 900;
             color: var(--accent-cyan);
             line-height: 1;
@@ -62,10 +60,11 @@
             font-weight: 300;
         }
 
-        /* Zaman Barı */
+        /* İlerleyen Zaman Barı ve Takip Eden Saat */
         .progress-box {
             width: 90%;
             margin-top: 30px;
+            position: relative; /* Saatin buna göre konumlanması için */
         }
 
         .bar-container {
@@ -83,15 +82,33 @@
             transition: width 1s linear;
         }
 
-        .bar-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            color: var(--text-gray);
-            font-size: 1rem;
+        /* Kayan Saat Konteyneri */
+        .clock-wrapper {
+            position: absolute;
+            top: 15px; /* Barın hemen altı */
+            left: 0%;
+            transform: translateX(-50%); /* Saati tam uca ortalar */
+            white-space: nowrap;
+            transition: left 1s linear;
         }
 
-        /* Sağ Panel (Gerçek Harita) */
+        #clock {
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .fixed-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px; /* Saate yer açmak için artırdık */
+            color: var(--text-gray);
+            font-size: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Sağ Panel (Harita) */
         .map-panel {
             flex: 0 0 58%;
             height: 85%;
@@ -100,14 +117,13 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            opacity: 0.25; /* Harita arkada zarif dursun */
+            opacity: 0.25;
             filter: brightness(0.8) sepia(1) hue-rotate(160deg) saturate(2);
         }
 
-        /* Küçük Doğum Dotları */
         .birth-dot {
             position: absolute;
-            width: 6px; /* Dotlar küçültüldü */
+            width: 6px;
             height: 6px;
             background: var(--accent-cyan);
             border-radius: 50%;
@@ -121,20 +137,9 @@
             20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
         }
-
-        #clock {
-            position: absolute;
-            top: 25px;
-            right: 50px;
-            font-size: 1.3rem;
-            color: var(--text-gray);
-            font-weight: 300;
-        }
     </style>
 </head>
 <body>
-
-    <div id="clock">00:00:00</div>
 
     <div class="dashboard">
         <div class="stats-panel">
@@ -146,17 +151,20 @@
                 <div class="bar-container">
                     <div class="bar-fill" id="bar"></div>
                 </div>
-                <div class="bar-labels">
+                
+                <!-- Kayan Saat Bölümü -->
+                <div class="clock-wrapper" id="clockWrapper">
+                    <span id="clock">00:00:00</span>
+                </div>
+
+                <div class="fixed-labels">
                     <span>00:00</span>
-                    <span id="pct">0% of day</span>
                     <span>23:59</span>
                 </div>
             </div>
         </div>
 
-        <div class="map-panel" id="map">
-            <!-- Dotlar buraya gelecek -->
-        </div>
+        <div class="map-panel" id="map"></div>
     </div>
 
     <script>
@@ -164,14 +172,13 @@
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
 
-        // Karalar Üzerindeki Koordinatlar (Okyanusları elemek için belirlenmiş bölgeler)
         const landCoordinates = [
-            {x: 72, y: 35}, {x: 78, y: 30}, {x: 85, y: 40}, // Asya / Çin / Hindistan
-            {x: 52, y: 50}, {x: 58, y: 65}, {x: 48, y: 45}, // Afrika / Orta Doğu
-            {x: 48, y: 28}, {x: 45, y: 22}, {x: 52, y: 25}, // Avrupa
-            {x: 20, y: 30}, {x: 15, y: 25}, {x: 25, y: 45}, // K. Amerika
-            {x: 32, y: 65}, {x: 35, y: 75}, // G. Amerika
-            {x: 82, y: 78}  // Avustralya
+            {x: 72, y: 35}, {x: 78, y: 30}, {x: 85, y: 40}, 
+            {x: 52, y: 50}, {x: 58, y: 65}, {x: 48, y: 45}, 
+            {x: 48, y: 28}, {x: 45, y: 22}, {x: 52, y: 25}, 
+            {x: 20, y: 30}, {x: 15, y: 25}, {x: 25, y: 45}, 
+            {x: 32, y: 65}, {x: 35, y: 75}, 
+            {x: 82, y: 78} 
         ];
 
         function update() {
@@ -179,43 +186,40 @@
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const passed = now - start;
             
-            // Sayı
+            // Sayı Güncelleme
             const current = Math.floor(passed * BIRTH_RATE);
             document.getElementById('birthCount').innerText = current.toLocaleString('en-US');
             
-            // Bar
+            // Bar ve Saatin Pozisyonunu Güncelleme
             const percent = (passed / MS_DAY) * 100;
             document.getElementById('bar').style.width = percent + "%";
-            document.getElementById('pct').innerText = percent.toFixed(1) + "% of day complete";
             
+            // Saati uca yapıştır (0 ile 100 arası sınırlı)
+            const wrapper = document.getElementById('clockWrapper');
+            wrapper.style.left = percent + "%";
+            
+            // Saat Yazısı
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
         }
 
         function createPing() {
             const map = document.getElementById('map');
             const coord = landCoordinates[Math.floor(Math.random() * landCoordinates.length)];
-            
             const dot = document.createElement('div');
             dot.className = 'birth-dot';
-            
-            // Seçilen bölge etrafında ufak rastgele sapmalar
-            const offX = (Math.random() - 0.5) * 10;
-            const offY = (Math.random() - 0.5) * 10;
-            
+            const offX = (Math.random() - 0.5) * 12;
+            const offY = (Math.random() - 0.5) * 12;
             dot.style.left = (coord.x + offX) + "%";
             dot.style.top = (coord.y + offY) + "%";
-            
             map.appendChild(dot);
             setTimeout(() => dot.remove(), 2000);
         }
 
         setInterval(update, 100);
-        setInterval(createPing, 350); // Parlama sıklığı
+        setInterval(createPing, 350);
 
-        // Gece yarısı yenileme
         setInterval(() => {
-            const d = new Date();
-            if(d.getHours()==0 && d.getMinutes()==0 && d.getSeconds()==0) location.reload();
+            if(new Date().getSeconds() === 0 && new Date().getMinutes() === 0 && new Date().getHours() === 0) location.reload();
         }, 1000);
 
         update();
