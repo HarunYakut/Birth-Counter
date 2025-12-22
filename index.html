@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Lite & Fast Edition</title>
+    <title>Birth Pulse - Perfect 1920x540</title>
     <style>
         :root {
             --bg-color: #08101b;
             --accent-cyan: #22d3ee;
-            --birth-yellow: #fbbf24; /* İstediğin parlak sarı/amber */
+            --birth-amber: #ff9f00; /* Kesin Turuncu/Sarı */
             --text-gray: #94a3b8;
-            --bar-bg: #111d2e;
         }
 
         body, html {
@@ -25,97 +24,98 @@
         .container {
             display: flex;
             width: 100%; height: 100%;
-            padding: 0 50px;
+            padding: 0 40px;
             box-sizing: border-box;
             align-items: center;
         }
 
         /* Sol Panel - İstatistikler */
         .stats-panel {
-            flex: 0 0 40%;
+            flex: 0 0 38%;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
         .count {
-            font-size: 11rem;
+            font-size: 10rem;
             font-weight: 900;
             color: var(--accent-cyan);
             line-height: 1;
             filter: drop-shadow(0 0 20px rgba(34, 211, 238, 0.4));
-            margin-bottom: 10px;
         }
 
         /* Zaman Barı ve Kayan Saat */
         .progress-box {
             width: 90%;
-            margin-top: 40px;
+            margin-top: 35px;
             position: relative;
         }
 
         .bar-container {
-            height: 8px;
-            background: var(--bar-bg);
+            height: 6px;
+            background: #111d2e;
             border-radius: 10px;
             overflow: hidden;
         }
 
         .bar-fill {
-            height: 100%;
-            width: 0%;
+            height: 100%; width: 0%;
             background: var(--accent-cyan);
             box-shadow: 0 0 15px var(--accent-cyan);
-            border-radius: 10px;
             transition: width 1s linear;
         }
 
         .clock-wrapper {
             position: absolute;
-            top: 18px;
-            left: 0%;
+            top: 15px; left: 0%;
             transform: translateX(-50%);
-            white-space: nowrap;
             transition: left 1s linear;
         }
 
         #clock {
             color: var(--accent-cyan);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            font-variant-numeric: tabular-nums;
         }
 
-        /* Sağ Panel - Harita ve Bubblelar */
+        /* Sağ Panel - Harita */
         .map-panel {
-            flex: 0 0 60%;
-            height: 90%;
+            flex: 0 0 62%;
+            height: 80%; /* Haritayı boydan küçülttük */
             position: relative;
-            /* Antarktika'yı kesmek için haritayı biraz büyütüp aşağı kaydırıyoruz */
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
-            background-size: 115%;
-            background-repeat: no-repeat;
-            background-position: center 15%; 
-            opacity: 0.4;
-            filter: brightness(0.8) sepia(1) hue-rotate(160deg) saturate(1.5);
+            /* Antarktika'yı Gizlemek İçin Kesim Alanı */
+            overflow: hidden; 
         }
 
-        /* Bubble Efekti */
+        .world-map {
+            width: 100%;
+            height: 125%; /* Haritayı biraz büyütüp aşağısını dışarı atıyoruz */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center top;
+            opacity: 0.35;
+            filter: brightness(0.7) sepia(1) hue-rotate(165deg) saturate(1.8);
+            position: absolute;
+            top: 0; left: 0;
+        }
+
+        /* Bubble Efekti (Gerçek Turuncu) */
         .bubble {
             position: absolute;
-            width: 12px;
-            height: 12px;
-            background: var(--birth-yellow);
+            width: 12px; height: 12px;
+            background: var(--birth-amber);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px var(--birth-yellow), 0 0 30px var(--birth-yellow);
-            animation: bubbleAnim 2s ease-out forwards;
-            pointer-events: none;
+            box-shadow: 0 0 15px var(--birth-amber), 0 0 30px var(--birth-amber);
+            animation: bubbleAnim 2.5s ease-out forwards;
+            z-index: 100;
         }
 
         @keyframes bubbleAnim {
-            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
-            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+            15% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
         }
     </style>
@@ -124,9 +124,9 @@
 
     <div class="container">
         <div class="stats-panel">
-            <div style="font-size: 1.6rem; color: var(--text-gray); letter-spacing: 5px; text-transform: uppercase;">World Births Today</div>
+            <div style="font-size: 1.5rem; color: var(--text-gray); letter-spacing: 4px; text-transform: uppercase;">World Births Today</div>
             <div class="count" id="birthCount">0</div>
-            <div style="font-size: 1.8rem; color: var(--text-gray);">new lives welcomed today</div>
+            <div style="font-size: 1.7rem; color: var(--text-gray); margin-top: 5px;">new lives welcomed today</div>
 
             <div class="progress-box">
                 <div class="bar-container"><div class="bar-fill" id="bar"></div></div>
@@ -134,8 +134,9 @@
             </div>
         </div>
 
-        <div class="map-panel" id="map">
-            <!-- Baloncuklar buraya eklenecek -->
+        <div class="map-panel" id="mapFrame">
+            <div class="world-map"></div>
+            <!-- Baloncuklar buraya gelecek -->
         </div>
     </div>
 
@@ -144,18 +145,18 @@
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
 
-        // Nüfus ağırlıklı ve sadece karadaki koordinatlar (X, Y yüzdeleri)
-        const landZones = [
-            // Asya (Yüksek Ağırlık)
-            {x: 72, y: 35, w: 10}, {x: 78, y: 30, w: 10}, {x: 82, y: 40, w: 10}, {x: 75, y: 45, w: 10},
-            // Afrika (Yüksek Ağırlık)
-            {x: 52, y: 55, w: 8}, {x: 58, y: 65, w: 8}, {x: 48, y: 45, w: 8}, {x: 55, y: 40, w: 8},
+        // KESİN KARA KOORDİNATLARI (Denizlerden ve Antarktika'dan arındırılmış)
+        const safeZones = [
+            // Asya
+            {x: 75, y: 30, w: 10}, {x: 78, y: 38, w: 10}, {x: 82, y: 32, w: 10}, {x: 72, y: 22, w: 8}, {x: 68, y: 35, w: 8},
+            // Afrika
+            {x: 52, y: 45, w: 8}, {x: 55, y: 55, w: 8}, {x: 48, y: 42, w: 8}, {x: 58, y: 40, w: 7},
             // Amerika
-            {x: 25, y: 35, w: 5}, {x: 18, y: 25, w: 4}, {x: 32, y: 65, w: 5}, {x: 35, y: 75, w: 5},
+            {x: 22, y: 32, w: 6}, {x: 28, y: 28, w: 5}, {x: 32, y: 55, w: 6}, {x: 36, y: 65, w: 6},
             // Avrupa
-            {x: 48, y: 28, w: 3}, {x: 52, y: 25, w: 3}, {x: 45, y: 22, w: 3},
+            {x: 48, y: 22, w: 4}, {x: 52, y: 18, w: 3}, {x: 44, y: 20, w: 3},
             // Okyanusya
-            {x: 85, y: 78, w: 2}
+            {x: 85, y: 68, w: 2}
         ];
 
         function updateUI() {
@@ -163,11 +164,8 @@
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const passed = now - start;
             
-            // Sayı
-            const current = Math.floor(passed * BIRTH_RATE);
-            document.getElementById('birthCount').innerText = current.toLocaleString('en-US');
+            document.getElementById('birthCount').innerText = Math.floor(passed * BIRTH_RATE).toLocaleString('en-US');
             
-            // Bar ve Saat
             const percent = (passed / MS_DAY) * 100;
             document.getElementById('bar').style.width = percent + "%";
             document.getElementById('clockWrapper').style.left = percent + "%";
@@ -175,13 +173,12 @@
         }
 
         function createBubble() {
-            const map = document.getElementById('map');
+            const frame = document.getElementById('mapFrame');
             
-            // Ağırlıklı bölge seçimi
-            const totalW = landZones.reduce((s, z) => s + z.w, 0);
+            const totalW = safeZones.reduce((s, z) => s + z.w, 0);
             let r = Math.random() * totalW;
-            let zone = landZones[0];
-            for(let z of landZones) {
+            let zone = safeZones[0];
+            for(let z of safeZones) {
                 r -= z.w;
                 if(r <= 0) { zone = z; break; }
             }
@@ -189,28 +186,20 @@
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
             
-            // Bölge içinde küçük doğal sapma
-            const jitterX = (Math.random() - 0.5) * 8;
-            const jitterY = (Math.random() - 0.5) * 8;
+            // Jitter'ı azalttım ki denize taşmasın
+            const jitterX = (Math.random() - 0.5) * 5;
+            const jitterY = (Math.random() - 0.5) * 5;
             
             bubble.style.left = (zone.x + jitterX) + "%";
             bubble.style.top = (zone.y + jitterY) + "%";
             
-            map.appendChild(bubble);
-            
-            // Performans için 2 saniye sonra sil
-            setTimeout(() => bubble.remove(), 2000);
+            frame.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 2500);
         }
 
-        // Akıcılık için güncellemeler
         setInterval(updateUI, 100);
-        setInterval(createBubble, 350); // Doğum frekansı
-
-        // Gece yarısı reset
-        setInterval(() => {
-            if(new Date().getHours()==0 && new Date().getMinutes()==0 && new Date().getSeconds()==0) location.reload();
-        }, 1000);
-
+        setInterval(createBubble, 350); 
+        setInterval(() => { if(new Date().getHours()==0 && new Date().getMinutes()==0 && new Date().getSeconds()==0) location.reload(); }, 1000);
         updateUI();
     </script>
 </body>
