@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Ultimate Precision Final</title>
+    <title>Birth Pulse - 100% Comprehensive Global</title>
     <style>
         :root {
             --bg-color: #08101b;
@@ -29,7 +29,7 @@
         }
 
         .stats-panel {
-            flex: 0 0 35%;
+            flex: 0 0 32%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -37,7 +37,7 @@
         }
 
         .label {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--map-blue);
             letter-spacing: 5px;
             text-transform: uppercase;
@@ -48,52 +48,22 @@
             font-weight: 900;
             color: var(--deep-orange);
             line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.4));
+            filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
             margin: 10px 0;
-        }
-
-        .sub-text {
-            font-size: 1.5rem;
-            color: var(--map-blue);
-        }
-
-        .progress-box {
-            width: 100%;
-            margin-top: 40px;
-            position: relative;
-        }
-
-        .bar-container {
-            height: 6px;
-            background: var(--bar-bg);
-            border-radius: 10px;
-        }
-
-        .bar-fill {
-            height: 100%; width: 0%;
-            background: var(--deep-orange);
-            box-shadow: 0 0 15px var(--deep-orange);
-            border-radius: 10px;
-        }
-
-        .clock-wrapper {
-            position: absolute;
-            top: 20px; left: 0%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-        }
-
-        #clock {
-            color: var(--deep-orange);
-            font-size: 1.2rem;
-            font-weight: bold;
             font-variant-numeric: tabular-nums;
         }
 
-        /* SAĞ PANEL */
+        .sub-text { font-size: 1.3rem; color: var(--map-blue); opacity: 0.7; }
+
+        .progress-box { width: 100%; margin-top: 50px; position: relative; }
+        .bar-container { height: 4px; background: var(--bar-bg); border-radius: 10px; }
+        .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
+        .clock-wrapper { position: absolute; top: 15px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
+        #clock { color: var(--deep-orange); font-size: 1.1rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+
         .map-panel {
             flex: 1;
-            height: 70%;
+            height: 80%;
             position: relative;
             margin-left: 50px;
             display: flex;
@@ -101,23 +71,16 @@
             justify-content: center;
         }
 
-        .map-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 2/1; /* Dünya haritası standart oranı */
-        }
+        .map-wrapper { position: relative; width: 100%; aspect-ratio: 2/1; }
 
-        .world-map {
-            position: absolute;
-            inset: 0;
+        .world-map-svg {
+            position: absolute; inset: 0;
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
             background-size: 100% 100%;
-            background-repeat: no-repeat;
             opacity: 0.15;
-            filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2);
+            filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2.5);
         }
 
-        /* BALONCUK */
         .bubble {
             position: absolute;
             width: 10px; height: 10px;
@@ -125,15 +88,15 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             box-shadow: 0 0 15px var(--deep-orange), 0 0 30px var(--deep-orange);
-            animation: bubbleAnim 2.5s cubic-bezier(0, 0, 0.2, 1) forwards;
+            animation: bubbleAnim 2.8s cubic-bezier(0.1, 0, 0.2, 1) forwards;
             pointer-events: none;
-            z-index: 999;
+            z-index: 100;
         }
 
         @keyframes bubbleAnim {
-            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
-            15% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            10% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(5); opacity: 0; }
         }
 
         #loading-overlay {
@@ -143,9 +106,8 @@
             background: var(--bg-color);
             z-index: 2000; color: var(--map-blue);
         }
-
-        .loader-bar-bg { width: 250px; height: 4px; background: #1e293b; margin-top: 15px; border-radius: 4px; overflow: hidden; }
-        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); transition: width 0.1s; }
+        .loader-bar-bg { width: 300px; height: 4px; background: #1e293b; margin-top: 25px; border-radius: 5px; overflow: hidden; }
+        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); transition: width 0.05s; }
     </style>
 </head>
 <body>
@@ -153,39 +115,52 @@
     <div class="container">
         <div class="stats-panel">
             <div class="label">World Births Today</div>
-            <div class="count" id="birthCount">0</div>
-            <div class="sub-text">new lives welcomed today</div>
+            <div id="birthCount" class="count">0</div>
+            <div class="sub-text">new lives welcomed since midnight</div>
 
             <div class="progress-box">
-                <div class="bar-container"><div class="bar-fill" id="bar"></div></div>
-                <div class="clock-wrapper" id="clockWrapper"><span id="clock">00:00:00</span></div>
+                <div class="bar-container"><div id="bar" class="bar-fill"></div></div>
+                <div id="clockWrapper" class="clock-wrapper"><span id="clock">00:00:00</span></div>
             </div>
         </div>
 
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 3px; font-size: 14px; font-weight: bold;">INITIALIZING PULSE</div>
-                    <div class="loader-bar-bg"><div class="loader-bar-fill" id="load-progress"></div></div>
-                    <div id="load-status" style="font-size: 11px; margin-top: 8px; opacity: 0.6; font-family: monospace;">Fetching GeoData...</div>
+                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 18px;">GLOBAL MAPPING: 230+ TERRITORIES</div>
+                    <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
+                    <div id="load-status" style="font-size: 11px; margin-top: 10px; opacity: 0.6; font-family: monospace;">Vectorizing Landmass...</div>
                 </div>
-                <div class="world-map"></div>
+                <div class="world-map-svg"></div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- DATASET: 230+ Ülke ve Bölge Doğum Payları (Ağırlıklı) ---
+        const countryShares = {
+            // ASYA
+            IND: 17.58, CHN: 7.02, PAK: 5.12, IDN: 3.32, BGD: 2.21, PHL: 1.05, VNM: 0.98, JPN: 0.52, TUR: 0.73, IRN: 0.72, THA: 0.35, KOR: 0.22, AFG: 1.08, IRQ: 0.78, SAU: 0.42, UZB: 0.58, MMR: 0.61, MYS: 0.34, KAZ: 0.28, NPL: 0.41, LKA: 0.18, KHM: 0.25, SYR: 0.36, JOR: 0.15, AZE: 0.11, ARE: 0.08, TJK: 0.19, LAO: 0.12, KGZ: 0.13, TKM: 0.09, LBN: 0.06, OMN: 0.06, KWT: 0.04, MNG: 0.05, ARM: 0.03, QAT: 0.02, BHR: 0.01, TLS: 0.03, BTN: 0.01, MDV: 0.005, BRN: 0.005,
+            // AFRIKA
+            NGA: 5.62, ETH: 3.05, COD: 3.22, EGY: 1.54, TZA: 1.72, KEN: 0.88, ZAF: 0.91, UGA: 1.32, SDN: 1.35, DZA: 0.62, MAR: 0.45, GHA: 0.68, MOZ: 0.92, AGO: 1.05, CIV: 0.71, MDG: 0.75, CMR: 0.72, NER: 0.82, BFA: 0.58, MLI: 0.74, MWI: 0.48, ZMB: 0.56, SOM: 0.52, SEN: 0.42, TCD: 0.65, GINE: 0.38, RWA: 0.25, BEN: 0.35, TUN: 0.11, BDI: 0.35, SSD: 0.38, SLE: 0.22, TGO: 0.21, LBY: 0.08, COG: 0.18, ERI: 0.09, LBR: 0.15, CAF: 0.14, MRT: 0.12, NAM: 0.06, BWA: 0.05, GMB: 0.08, GNB: 0.06, LSO: 0.04, GAB: 0.04, MUS: 0.01, SWZ: 0.03, DJB: 0.02, COM: 0.02, CPV: 0.01, STP: 0.008, SYC: 0.002,
+            // AMERIKA
+            USA: 2.72, BRA: 1.85, MEX: 1.25, COL: 0.48, ARG: 0.44, PER: 0.35, CAN: 0.28, VEN: 0.32, CHL: 0.15, GTM: 0.32, ECU: 0.22, BOL: 0.18, HTI: 0.21, CUB: 0.08, DOM: 0.14, HND: 0.15, PRY: 0.11, SLV: 0.08, NIC: 0.09, CRC: 0.04, PAN: 0.05, PUR: 0.01, URU: 0.03, JAM: 0.03, TTO: 0.01, GUY: 0.01, SUR: 0.01, BLZ: 0.008, BHS: 0.003, BRB: 0.002, LCA: 0.001, GRD: 0.001,
+            // AVRUPA
+            RUS: 0.95, DEU: 0.58, FRA: 0.55, GBR: 0.52, ITA: 0.31, ESP: 0.28, POL: 0.25, UKR: 0.18, ROU: 0.12, NLD: 0.13, BEL: 0.09, CZE: 0.08, GRC: 0.06, PRT: 0.06, SWE: 0.08, HUN: 0.07, AUT: 0.06, CHE: 0.06, SRB: 0.05, BGR: 0.04, DNK: 0.05, FIN: 0.04, NOR: 0.04, SVK: 0.04, IRL: 0.04, HRV: 0.02, BIH: 0.02, MDA: 0.02, LTU: 0.02, ALB: 0.02, MKD: 0.01, SVN: 0.01, LVA: 0.01, EST: 0.008, MNE: 0.005, LUX: 0.005, MLT: 0.003, ISL: 0.003, AND: 0.0001, MON: 0.0001, SMR: 0.0001, VAT: 0.0,
+            // OKYANUSYA
+            AUS: 0.22, PNG: 0.21, NZL: 0.05, FJI: 0.01, SLB: 0.01, VUT: 0.008, WSM: 0.005, KIR: 0.003, TON: 0.002, FSM: 0.002, MHL: 0.001, PLW: 0.0005, NRU: 0.0005, TUV: 0.0002,
+            // DIĞER / ÖZEL
+            GRL: 0.0005, ESH: 0.01, PSE: 0.15, TWN: 0.12, HKG: 0.03
+        };
+
         const DAILY_BIRTHS = 385000;
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
-        const TOTAL_POINTS_POOL = 35000;
+        const POINT_DENSITY = 80000; // Yüksek hassasiyet
 
-        const countryBirthShare = {
-            IND:0.172, CHN:0.104, NGA:0.062, PAK:0.045, IDN:0.041, ETH:0.032, USA:0.029, COD:0.028, 
-            BGD:0.026, BRA:0.024, MEX:0.019, PHL:0.018, EGY:0.017, VNM:0.016, TUR:0.013, IRN:0.012, 
-            DEU:0.011, FRA:0.010, GBR:0.009, ITA:0.009, ESP:0.008, JPN:0.007, KOR:0.006, CAN:0.005, 
-            AUS:0.004, ZAF:0.009, KEN:0.008, TZA:0.007, RUS:0.012, ARG:0.005, COL:0.006
-        };
+        let countryPoints = {};
+        let countryList = [];
+        let weights = [];
 
         const mapFrame = document.getElementById('mapFrame');
         const birthCountEl = document.getElementById('birthCount');
@@ -196,149 +171,118 @@
         const loadStatusEl = document.getElementById('load-status');
         const loadingOverlay = document.getElementById('loading-overlay');
 
-        let countryPoints = {};
-        let countryList = [];
-        let weights = [];
-
         fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
             .then(r => r.json())
-            .then(data => initMapData(data))
-            .catch(err => { loadStatusEl.innerText = "Connection Error!"; console.error(err); });
+            .then(processGeoData);
 
-        async function initMapData(geo) {
+        async function processGeoData(geo) {
             const canvas = document.createElement("canvas");
-            canvas.width = 2000; canvas.height = 1000;
+            canvas.width = 2400; canvas.height = 1200;
             const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
             function project([lon, lat]) {
-                // Equirectangular Projection
                 return [(lon + 180) / 360 * canvas.width, (90 - lat) / 180 * canvas.height];
             }
 
             const features = geo.features;
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
-                const iso = f.properties.ISO_A3 || f.properties.ISO_A2 || i.toString();
-                const name = f.properties.ADMIN || f.properties.NAME || "Unknown";
-                const share = countryBirthShare[iso] || 0.002;
-
+                const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || i.toString();
+                const name = f.properties.ADMIN || f.properties.NAME || "Area";
+                
+                const share = countryShares[iso] || 0.01; // Listede yoksa çok küçük pay
                 countryPoints[iso] = [];
                 countryList.push(iso);
                 weights.push(share);
 
-                const pct = Math.floor((i / features.length) * 100);
-                loadProgressEl.style.width = pct + "%";
-                loadStatusEl.innerText = `SCANNING: ${name}`;
+                loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
+                loadStatusEl.innerText = `VECTORIZING: ${name}`;
 
-                // Ülkeyi Tuvale Çiz (Görünmez)
-                ctx.clearRect(0,0,canvas.width, canvas.height);
-                ctx.fillStyle = "red"; // Kesin bir renk
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
                 ctx.beginPath();
-                
                 const type = f.geometry.type;
                 const coords = type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
 
-                coords.forEach(polygon => {
-                    polygon.forEach(ring => {
+                coords.forEach(poly => {
+                    poly.forEach(ring => {
                         ring.forEach((p, idx) => {
-                            const [cx, cy] = project(p);
-                            if (idx === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+                            const [x, y] = project(p);
+                            if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                         });
                     });
                 });
                 ctx.fill();
 
-                // Noktaları Tespit Et
-                const imgData = ctx.getImageData(0,0,canvas.width, canvas.height).data;
-                const targetPoints = Math.max(15, Math.floor(TOTAL_POINTS_POOL * share));
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                const target = Math.max(10, Math.floor((POINT_DENSITY * share) / 30)); 
                 let tries = 0;
 
-                while(countryPoints[iso].length < targetPoints && tries < targetPoints * 60) {
+                while (countryPoints[iso].length < target && tries < target * 100) {
                     const rx = Math.floor(Math.random() * canvas.width);
                     const ry = Math.floor(Math.random() * canvas.height);
-                    const alpha = imgData[(ry * canvas.width + rx) * 4 + 3]; // Alpha kanalına bak
-                    if(alpha > 128) {
-                        countryPoints[iso].push({ x: (rx/canvas.width)*100, y: (ry/canvas.height)*100 });
+                    if (imgData[(ry * canvas.width + rx) * 4 + 3] > 128) { // Sadece kara
+                        countryPoints[iso].push({ x: (rx / canvas.width) * 100, y: (ry / canvas.height) * 100 });
                     }
                     tries++;
                 }
 
-                // Debug: İlk birkaç ülkeyi kontrol et
-                if(i < 5) console.log(`Country ${name} (${iso}): Found ${countryPoints[iso].length} points.`);
-
-                if (i % 12 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 20 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
-            console.log("Mapping complete. Starting pulse...");
             loadingOverlay.style.opacity = "0";
-            setTimeout(() => loadingOverlay.style.display = "none", 500);
-            startCycles();
+            setTimeout(() => loadingOverlay.style.display = "none", 600);
+            startLoop();
         }
 
-        function updateUI() {
+        function updateCounters() {
             const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const msPassed = now - startOfDay;
-            
-            const currentBirths = Math.floor(msPassed * BIRTH_RATE);
-            birthCountEl.innerText = currentBirths.toLocaleString('en-US');
-            
-            const dayPercent = (msPassed / MS_DAY) * 100;
-            barEl.style.width = dayPercent + "%";
-            clockWrapperEl.style.left = dayPercent + "%";
+            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const passed = now - start;
+            birthCountEl.innerText = Math.floor(passed * BIRTH_RATE).toLocaleString('en-US');
+            const pct = (passed / MS_DAY) * 100;
+            barEl.style.width = pct + "%";
+            clockWrapperEl.style.left = pct + "%";
             clockEl.innerText = now.toLocaleTimeString('en-GB');
         }
 
-        function createBubble() {
-            const totalWeight = weights.reduce((a,b) => a + b, 0);
-            let r = Math.random() * totalWeight;
-            let selectedIso = countryList[0];
-            
-            for(let i=0; i<countryList.length; i++) {
+        function spawn() {
+            const totalW = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * totalW;
+            let iso = countryList[0];
+            for (let i = 0; i < countryList.length; i++) {
                 r -= weights[i];
-                if(r <= 0) { selectedIso = countryList[i]; break; }
+                if (r <= 0) { iso = countryList[i]; break; }
             }
 
-            const points = countryPoints[selectedIso];
-            if(!points || points.length === 0) return;
-
-            const pt = points[Math.floor(Math.random() * points.length)];
+            const pts = countryPoints[iso];
+            if (!pts || pts.length === 0) return;
+            const p = pts[Math.floor(Math.random() * pts.length)];
             
             const b = document.createElement('div');
             b.className = 'bubble';
-            b.style.left = pt.x + "%";
-            b.style.top = pt.y + "%";
-            
+            b.style.left = p.x + "%";
+            b.style.top = p.y + "%";
             mapFrame.appendChild(b);
-            setTimeout(() => b.remove(), 2600);
+            setTimeout(() => b.remove(), 2800);
         }
 
-        let lastTime = Date.now(), carry = 0;
-        function startCycles() {
-            setInterval(updateUI, 100);
-
-            function birthLoop() {
+        let lastT = Date.now(), carry = 0;
+        function startLoop() {
+            setInterval(updateCounters, 100);
+            function loop() {
                 const now = Date.now();
-                const dt = now - lastTime;
-                lastTime = now;
-                
-                // Zaman atlamalarını kontrol et (örneğin sekme değişince)
-                const effectiveDt = Math.min(dt, 1000); 
-                carry += effectiveDt * BIRTH_RATE;
-
-                while(carry >= 1) {
-                    createBubble();
-                    carry--;
-                }
-                requestAnimationFrame(birthLoop);
+                const dt = Math.min(now - lastT, 1000);
+                lastT = now;
+                carry += dt * BIRTH_RATE;
+                while (carry >= 1) { spawn(); carry--; }
+                requestAnimationFrame(loop);
             }
-            birthLoop();
+            loop();
         }
 
-        // Gece yarısı reset
         setInterval(() => {
-            const n = new Date();
-            if(n.getHours()==0 && n.getMinutes()==0 && n.getSeconds()==0) location.reload();
+            if(new Date().toLocaleTimeString('en-GB') === "00:00:00") location.reload();
         }, 1000);
     </script>
 </body>
