@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Absolute Global Precision</title>
+    <title>Birth Pulse - Living World Edition</title>
     <style>
         :root {
             --bg-color: #050a12;
             --deep-orange: #f59e0b; 
             --map-blue: #38bdf8;   
-            --land-fill: #111d2e;
-            --border-color: rgba(56, 189, 248, 0.3);
+            --land-fill: #0d1726;
+            --border-color: rgba(56, 189, 248, 0.2);
         }
         body, html {
             margin: 0; padding: 0;
@@ -55,15 +55,11 @@
             display: flex;
             align-items: center; justify-content: center;
         }
-        /* Harita Kutusu: 2:1 Oranını Kesin Korumalıyız */
         .map-wrapper { 
             position: relative; 
             width: 100%; 
             aspect-ratio: 2/1;
-            background: rgba(0,0,0,0.2);
-            border-radius: 4px;
         }
-        /* İki Canvas: Biri Karalar, Diğeri Sınırlar İçin */
         canvas {
             position: absolute;
             inset: 0;
@@ -71,22 +67,9 @@
             height: 100%;
             pointer-events: none;
         }
-        #landCanvas { z-index: 1; opacity: 0.6; }
+        #landCanvas { z-index: 1; }
         #borderCanvas { z-index: 2; }
-        
-        .bubble {
-            position: absolute; width: 4px; height: 4px;
-            background: var(--deep-orange); border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px var(--deep-orange), 0 0 15px var(--deep-orange);
-            animation: bubbleAnim 1.8s cubic-bezier(0, 0.5, 0.5, 1) forwards;
-            pointer-events: none; z-index: 100;
-        }
-        @keyframes bubbleAnim {
-            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
-            15% { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
-        }
+        #highlightCanvas { z-index: 3; } /* Patlamaların olduğu katman */
         
         #loading-overlay {
             position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -113,35 +96,36 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 16px;">GENERATING MASTER MAP</div>
+                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 16px;">CALIBRATING WORLD NERVE SYSTEM</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 10px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Calibrating Coordinates...</div>
+                    <div id="load-status" style="font-size: 10px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Indexing Country Geometries...</div>
                 </div>
-                <!-- Arka plan dolgusu -->
                 <canvas id="landCanvas"></canvas>
-                <!-- Sınır çizgileri -->
                 <canvas id="borderCanvas"></canvas>
+                <canvas id="highlightCanvas"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 240+ ÜLKE VE BÖLGE: NÜFUS X CBR AYARLI GERÇEK DOĞUM PAYLARI (%) ---
+        // --- DATASET: 240+ ÜLKE DOĞUM PAYLARI (%) ---
         const countryShares = {
             IND: 17.55, CHN: 6.85, PAK: 5.35, IDN: 3.25, BGD: 2.15, NGA: 6.22, ETH: 3.35, COD: 3.42, EGY: 1.58, USA: 2.75, BRA: 1.88, MEX: 1.32, RUS: 0.88, TUR: 0.72, IRN: 0.71, DEU: 0.55, FRA: 0.52, GBR: 0.51, JPN: 0.42, PHL: 1.15, VNM: 0.92, THA: 0.35, KOR: 0.15, AFG: 1.12, IRQ: 0.82, SAU: 0.45, UZB: 0.61, MMR: 0.58, MYS: 0.32, KAZ: 0.28, CAN: 0.25, AUS: 0.22, TZA: 1.85, KEN: 0.95, ZAF: 0.88, UGA: 1.42, SDN: 1.35, DZA: 0.62, MAR: 0.45, GHA: 0.71, MOZ: 0.91, AGO: 1.05, CIV: 0.72, MDG: 0.75, CMR: 0.72, NER: 0.85, BFA: 0.58, MLI: 0.75, MWI: 0.48, ZMB: 0.55, SOM: 0.52, SEN: 0.45, TCD: 0.65, GIN: 0.38, RWA: 0.25, BEN: 0.35, TUN: 0.11, BDI: 0.35, SSD: 0.38, SLE: 0.22, TGO: 0.21, LBY: 0.08, COG: 0.18, ERI: 0.09, LBR: 0.15, CAF: 0.14, MRT: 0.12, NAM: 0.06, BWA: 0.05, GMB: 0.08, GNB: 0.06, LSO: 0.04, GAB: 0.04, MUS: 0.01, SWZ: 0.03, DJB: 0.02, COM: 0.02, CPV: 0.01, STP: 0.008, SYC: 0.002, ESP: 0.25, ITA: 0.3, POL: 0.22, UKR: 0.12, COL: 0.45, ARG: 0.42, PER: 0.35, VEN: 0.3, CHL: 0.15, GTM: 0.32, ECU: 0.2, BOL: 0.18, HTI: 0.22, CUB: 0.08, DOM: 0.14, HND: 0.15, PRY: 0.11, SLV: 0.08, NIC: 0.09, CRC: 0.04, PAN: 0.05, PRT: 0.06, ROU: 0.1, GRC: 0.05, ISR: 0.25, PSE: 0.22, SYR: 0.35, JOR: 0.15, LBN: 0.06, KWT: 0.04, ARE: 0.08, QAT: 0.02, OMN: 0.06, YEM: 0.95, NPL: 0.38, LKA: 0.15, KHM: 0.25, LAO: 0.12, MNG: 0.05, PNG: 0.22, NZL: 0.05, FJI: 0.01, JAM: 0.03, TTO: 0.01, GUY: 0.01, SUR: 0.01, ISL: 0.005, LUX: 0.005, MLT: 0.003, GRL: 0.001, ESH: 0.01, TWN: 0.1, HKG: 0.03, SGP: 0.03, PRK: 0.18, KAZ: 0.28, TJK: 0.18, KGZ: 0.12, TKM: 0.08, ARM: 0.03, AZE: 0.1, GEO: 0.04, CYP: 0.01, BTN: 0.01, MDV: 0.005, BRN: 0.005, TLS: 0.03, VUT: 0.01, SLB: 0.01, WSM: 0.005, KIR: 0.003, TON: 0.002, FSM: 0.002, MHL: 0.001, PLW: 0.0005, NRU: 0.0005, TUV: 0.0002, BLZ: 0.008, BHS: 0.005, BRB: 0.002, LCA: 0.001, GRD: 0.001, VCT: 0.001, KNA: 0.0005, ATG: 0.001, DMA: 0.0005, SMR: 0.0001, MCO: 0.0001, VAT: 0.0, LIE: 0.0001, AND: 0.0001
         };
 
-        const DAILY_BIRTHS = 362737; // 2025 Tahmini
+        const DAILY_BIRTHS = 362737;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        const POINT_DENSITY = 90000; // Harita detay kalitesi
-
-        let countryPoints = {};
+        
+        let countryPaths = {}; // Path2D objeleri
+        let activeFlashes = []; // Mevcut patlamalar: [{iso, start}]
         let countryList = [];
         let weights = [];
 
-        const mapFrame = document.getElementById('mapFrame');
         const landCanvas = document.getElementById('landCanvas');
         const borderCanvas = document.getElementById('borderCanvas');
+        const highlightCanvas = document.getElementById('highlightCanvas');
+        const hCtx = highlightCanvas.getContext("2d");
+        
         const birthCountEl = document.getElementById('birthCount');
         const barEl = document.getElementById('bar');
         const clockWrapperEl = document.getElementById('clockWrapper');
@@ -150,23 +134,17 @@
         const loadStatusEl = document.getElementById('load-status');
         const loadingOverlay = document.getElementById('loading-overlay');
 
-        // 1. ADIM: GeoJSON VERİSİNİ ÇEK VE ÇİZ (Master Alignment)
         fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
             .then(r => r.json())
             .then(init);
 
         async function init(geo) {
-            const w = 2400, h = 1200; // Kesin 2:1 oran
-            landCanvas.width = borderCanvas.width = w;
-            landCanvas.height = borderCanvas.height = h;
+            const w = 2400, h = 1200;
+            landCanvas.width = borderCanvas.width = highlightCanvas.width = w;
+            landCanvas.height = borderCanvas.height = highlightCanvas.height = h;
 
             const lCtx = landCanvas.getContext("2d");
             const bCtx = borderCanvas.getContext("2d");
-            
-            // Gizli Canvas: Sadece kara parçası tespiti için (Hızlı pixel okuma)
-            const detCanvas = document.createElement("canvas");
-            detCanvas.width = w; detCanvas.height = h;
-            const dCtx = detCanvas.getContext("2d", { willReadFrequently: true });
 
             function project([lon, lat]) {
                 return [(lon + 180) / 360 * w, (90 - lat) / 180 * h];
@@ -176,58 +154,38 @@
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
                 const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || i.toString();
-                const share = countryShares[iso] || 0.02;
-                countryPoints[iso] = [];
+                const share = countryShares[iso] || 0.01;
                 countryList.push(iso);
                 weights.push(share);
 
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `MAPPING: ${f.properties.ADMIN || iso}`;
+                loadStatusEl.innerText = `POLYGONAL MAPPING: ${f.properties.ADMIN || iso}`;
 
-                dCtx.clearRect(0,0,w,h);
-                dCtx.fillStyle = "white";
-                lCtx.fillStyle = "#111d2e"; // Karaların dolgu rengi
-                bCtx.strokeStyle = "rgba(56, 189, 248, 0.4)"; // Sınır rengi
+                // Ülkenin Path2D nesnesini oluştur (Hızlı çizim için)
+                const p2d = new Path2D();
+                const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+                coords.forEach(poly => poly.forEach(ring => ring.forEach((p, idx) => {
+                    const [x, y] = project(p);
+                    if (idx === 0) p2d.moveTo(x, y); else p2d.lineTo(x, y);
+                })));
+                countryPaths[iso] = p2d;
+
+                // Statik haritayı çiz (Arka plan ve Sınır)
+                lCtx.fillStyle = "#0d1726";
+                lCtx.fill(p2d);
+                bCtx.strokeStyle = "rgba(56, 189, 248, 0.25)";
                 bCtx.lineWidth = 0.6;
+                bCtx.stroke(p2d);
 
-                const drawShape = (ctx) => {
-                    ctx.beginPath();
-                    const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-                    coords.forEach(poly => poly.forEach(ring => ring.forEach((p, idx) => {
-                        const [x, y] = project(p);
-                        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                    })));
-                };
-
-                // Gizli tespiti çiz
-                drawShape(dCtx); dCtx.fill();
-                // Görünür haritayı çiz
-                drawShape(lCtx); lCtx.fill();
-                // Sınırları çiz
-                drawShape(bCtx); bCtx.stroke();
-
-                // Kara parçası içinde güvenli noktalar oluştur
-                const imgData = dCtx.getImageData(0,0,w,h).data;
-                const target = Math.max(10, Math.floor((POINT_DENSITY * share) / 80));
-                let tries = 0;
-                while (countryPoints[iso].length < target && tries < target * 65) {
-                    const rx = Math.floor(Math.random() * w);
-                    const ry = Math.floor(Math.random() * h);
-                    if (imgData[(ry * w + rx) * 4 + 3] > 128) {
-                        countryPoints[iso].push({ x: (rx / w) * 100, y: (ry / h) * 100 });
-                    }
-                    tries++;
-                }
-
-                if (i % 20 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 30 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
-            loadingOverlay.style.opacity = "0"; setTimeout(() => loadingOverlay.style.display = "none", 500);
-            start();
+            loadingOverlay.style.opacity = "0";
+            setTimeout(() => loadingOverlay.style.display = "none", 500);
+            startSimulation();
         }
 
-        // 2. ADIM: SAYAÇ VE BALONCUK DÖNGÜSÜ
-        function update() {
+        function updateUI() {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const passed = now - start;
@@ -238,32 +196,57 @@
             clockEl.innerText = now.toLocaleTimeString('en-GB');
         }
 
-        function spawn() {
+        // Bir ülkede "patlama" tetikle
+        function triggerFlash() {
             const sumW = weights.reduce((a, b) => a + b, 0);
             let r = Math.random() * sumW, picked = countryList[0];
             for (let i = 0; i < countryList.length; i++) {
                 r -= weights[i]; if (r <= 0) { picked = countryList[i]; break; }
             }
-            const pts = countryPoints[picked];
-            if (!pts || pts.length === 0) return;
-            const p = pts[Math.floor(Math.random() * pts.length)];
-            const b = document.createElement('div');
-            b.className = 'bubble'; b.style.left = p.x + "%"; b.style.top = p.y + "%";
-            mapFrame.appendChild(b); setTimeout(() => b.remove(), 1800);
+            activeFlashes.push({ iso: picked, start: Date.now() });
         }
 
         let lastT = Date.now(), carry = 0;
-        function start() {
-            setInterval(update, 100);
+        function startSimulation() {
+            setInterval(updateUI, 100);
+
             function loop() {
                 const now = Date.now();
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
-                while (carry >= 1) { spawn(); carry--; }
+
+                while (carry >= 1) {
+                    triggerFlash();
+                    carry--;
+                }
+
+                // Highlight Katmanını Temizle ve Güncel Flaşları Çiz
+                hCtx.clearRect(0, 0, 2400, 1200);
+                const flashDuration = 1200; // Bir flaşın sönme süresi (ms)
+
+                activeFlashes = activeFlashes.filter(f => {
+                    const age = now - f.start;
+                    if (age >= flashDuration) return false;
+
+                    const opacity = Math.pow(1 - age / flashDuration, 2); // Üstel sönme (daha organik)
+                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.7})`;
+                    
+                    // Ülkenin tamamını aydınlat
+                    if (countryPaths[f.iso]) {
+                        hCtx.fill(countryPaths[f.iso]);
+                    }
+                    return true;
+                });
+
                 requestAnimationFrame(loop);
             }
             loop();
         }
+
+        // Gece yarısı yenileme
+        setInterval(() => {
+            if(new Date().toLocaleTimeString('en-GB') === "00:00:00") location.reload();
+        }, 1000);
     </script>
 </body>
 </html>
