@@ -3,130 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Birth Dashboard Pro</title>
+    <title>Birth Pulse - 1920x540 Edition</title>
     <style>
         :root {
-            --bg-color: #0c1e35; /* Pastel Koyu Mavi */
-            --accent-blue: #22d3ee; /* Sağlık uygulaması neon/pastel mavisi */
-            --text-gray: #94a3b8;
-            --progress-bg: #1e3a5f;
+            --bg: #08101b; /* Çok koyu lacivert */
+            --cyan: #22d3ee; /* İstediğin pastel turkuaz */
+            --map-dot: #1e293b; /* Harita noktalarının rengi */
+            --text-main: #f8fafc;
+            --text-dim: #64748b;
         }
 
         body, html {
             margin: 0; padding: 0;
-            width: 100vw; height: 100vh;
+            width: 100%; height: 100%;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
             overflow: hidden;
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* 1920x540 Yatay Yerleşim */
-        .container {
+        /* 1920x540 Yerleşimi */
+        .dashboard {
             display: flex;
-            width: 100%;
-            height: 100%;
-            padding: 20px 40px;
-            box-sizing: border-box;
+            width: 100vw;
+            height: 100vh;
+            padding: 0 60px;
             align-items: center;
+            box-sizing: border-box;
+            gap: 40px;
         }
 
-        /* Sol Panel: İstatistikler */
-        .stats-panel {
-            flex: 0 0 45%; /* Sayı kısmı %45 yer kaplasın */
+        /* Sol Taraf: Sayılar */
+        .stats {
+            flex: 0 0 40%;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        .title {
-            font-size: 1.8rem;
-            color: var(--text-gray);
+        .label {
+            font-size: 1.4rem;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            margin-bottom: -10px;
+            letter-spacing: 6px;
+            color: var(--text-dim);
+            margin-bottom: -5px;
         }
 
-        .count {
-            font-size: 10rem; /* Ekran enine geniş olduğu için devasa yapıyoruz */
-            font-weight: 900;
-            color: var(--accent-blue);
+        .counter {
+            font-size: 11rem; /* Ekran geniş olduğu için devasa yapıyoruz */
+            font-weight: 800;
+            color: var(--cyan);
             line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(34, 211, 238, 0.4));
+            margin: 10px 0;
+            filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.4));
         }
 
-        .sub-text {
-            font-size: 1.8rem;
-            color: var(--text-gray);
-            margin-top: 5px;
-            font-weight: 300;
+        .subtext {
+            font-size: 1.6rem;
+            color: var(--text-dim);
         }
 
         /* Zaman Barı */
-        .progress-section {
-            width: 100%;
+        .timer-box {
             margin-top: 30px;
+            width: 100%;
         }
 
-        .progress-container {
-            width: 90%;
-            height: 8px;
-            background: var(--progress-bg);
+        .bar-bg {
+            height: 6px;
+            background: #112233;
             border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--accent-blue);
-            box-shadow: 0 0 15px var(--accent-blue);
-            transition: width 1s linear;
-        }
-
-        .time-labels {
-            width: 90%;
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            color: var(--text-gray);
-            font-size: 1rem;
-        }
-
-        /* Sağ Panel: Harita */
-        .map-panel {
-            flex: 0 0 55%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             position: relative;
         }
 
-        /* SVG Harita Stili */
-        #world-svg {
-            width: 90%;
-            height: auto;
-            max-height: 80%; /* Boydan küçülttük */
-            fill: #1e3a5f; /* Harita varsayılan rengi */
-            stroke: var(--bg-color);
-            stroke-width: 0.5;
-            transition: all 0.3s;
+        .bar-fill {
+            position: absolute;
+            height: 100%;
+            background: var(--cyan);
+            box-shadow: 0 0 15px var(--cyan);
+            border-radius: 10px;
+            transition: width 1s linear;
         }
 
-        /* Ülke Parlama Efekti */
-        .country-flash {
-            fill: var(--accent-blue) !important;
-            filter: drop-shadow(0 0 8px var(--accent-blue));
-            transition: fill 0.1s, filter 0.1s;
+        .bar-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Sağ Taraf: Dotted World Map */
+        .map-container {
+            flex: 0 0 60%;
+            height: 80%;
+            position: relative;
+            /* Harita görselini arka plan olarak kullanıyoruz (yüksek kaliteli nokta haritası) */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bb/World_map_dots.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.2; /* Harita çok baskın olmasın */
+            filter: invert(80%) sepia(50%) saturate(1000%) hue-rotate(150deg);
+        }
+
+        /* Parlama Efekti */
+        .glow-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 25px var(--cyan), 0 0 50px var(--cyan);
+            transform: translate(-50%, -50%);
+            animation: birthPulse 2.5s ease-out forwards;
+        }
+
+        @keyframes birthPulse {
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
         }
 
         #clock {
             position: absolute;
-            top: 20px;
+            top: 25px;
             right: 40px;
-            font-size: 1.5rem;
-            color: var(--text-gray);
+            color: var(--text-dim);
+            font-size: 1.2rem;
             font-weight: 300;
         }
     </style>
@@ -135,89 +139,84 @@
 
     <div id="clock">00:00:00</div>
 
-    <div class="container">
-        <div class="stats-panel">
-            <div class="title">World Births Today</div>
-            <div class="count" id="birthCount">0</div>
-            <div class="sub-text">new lives welcomed today</div>
-
-            <div class="progress-section">
-                <div class="progress-container">
-                    <div class="progress-bar" id="dayProgress"></div>
-                </div>
-                <div class="time-labels">
+    <div class="dashboard">
+        <div class="stats">
+            <div class="label">World Births Today</div>
+            <div class="counter" id="count">0</div>
+            <div class="subtext">new lives welcomed into our world</div>
+            
+            <div class="timer-box">
+                <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+                <div class="bar-info">
                     <span>00:00</span>
-                    <span id="dayPercent">0% of day</span>
+                    <span id="percent">0% of day</span>
                     <span>23:59</span>
                 </div>
             </div>
         </div>
 
-        <div class="map-panel">
-            <!-- Basitleştirilmiş Dünya Haritası SVG -->
-            <svg id="world-svg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-                <!-- Kıta/Ülke Blokları (Simüle edilmiş basitleştirilmiş pathler) -->
-                <!-- Asya -->
-                <path id="asia-1" d="M650,100 L850,100 L900,300 L700,400 Z" />
-                <path id="asia-2" d="M750,300 L850,350 L800,450 Z" />
-                <!-- Afrika -->
-                <path id="africa" d="M450,250 L580,250 L600,450 L500,480 L450,400 Z" />
-                <!-- Avrupa -->
-                <path id="europe" d="M450,100 L600,100 L620,230 L450,230 Z" />
-                <!-- Kuzey Amerika -->
-                <path id="na" d="M50,50 L350,50 L400,250 L100,250 Z" />
-                <!-- Güney Amerika -->
-                <path id="sa" d="M250,280 L380,280 L350,480 L250,450 Z" />
-                <!-- Avustralya -->
-                <path id="aus" d="M800,380 L900,380 L920,450 L820,450 Z" />
-            </svg>
+        <div class="map-container" id="map">
+            <!-- Parlamalar buraya eklenecek -->
         </div>
     </div>
 
     <script>
         const DAILY_BIRTHS = 385000;
-        const BIRTHS_PER_MS = DAILY_BIRTHS / (24 * 60 * 60 * 1000);
-        
-        // Ülke/Bölge listesi (Nüfusa göre ağırlıklı seçilecek)
-        const regions = ['asia-1', 'asia-1', 'asia-2', 'africa', 'africa', 'europe', 'na', 'sa', 'aus'];
+        const MS_IN_DAY = 24 * 60 * 60 * 1000;
+        const BIRTHS_PER_MS = DAILY_BIRTHS / MS_IN_DAY;
+
+        // Haritada okyanuslara denk gelmemesi için yaklaşık kara koordinatları (x, y yüzdeleri)
+        const landZones = [
+            {x: 75, y: 35}, {x: 82, y: 30}, {x: 70, y: 45}, // Asya
+            {x: 52, y: 55}, {x: 55, y: 40}, {x: 58, y: 70}, // Afrika
+            {x: 50, y: 30}, {x: 45, y: 25}, {x: 48, y: 35}, // Avrupa
+            {x: 20, y: 30}, {x: 25, y: 40}, {x: 15, y: 20}, // K.Amerika
+            {x: 30, y: 65}, {x: 35, y: 75}, // G.Amerika
+            {x: 85, y: 75} // Avustralya
+        ];
 
         function update() {
             const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const msPassed = now - startOfDay;
+            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const passed = now - start;
             
-            const currentBirths = Math.floor(msPassed * BIRTHS_PER_MS);
-            document.getElementById('birthCount').innerText = currentBirths.toLocaleString('en-US');
+            // Sayı Güncelleme
+            const current = Math.floor(passed * BIRTHS_PER_MS);
+            document.getElementById('count').innerText = current.toLocaleString('en-US');
             
-            const dayPercent = (msPassed / (24 * 60 * 60 * 1000)) * 100;
-            document.getElementById('dayProgress').style.width = dayPercent + "%";
-            document.getElementById('dayPercent').innerText = dayPercent.toFixed(1) + "% complete";
-
+            // Bar Güncelleme
+            const pct = (passed / MS_IN_DAY) * 100;
+            document.getElementById('bar').style.width = pct + "%";
+            document.getElementById('percent').innerText = pct.toFixed(1) + "% of day complete";
+            
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
         }
 
-        // Ülke aydınlatma fonksiyonu
-        function flashCountry() {
-            // Rastgele bir bölge seç
-            const randomId = regions[Math.floor(Math.random() * regions.length)];
-            const el = document.getElementById(randomId);
+        function createBirth() {
+            const map = document.getElementById('map');
+            const zone = landZones[Math.floor(Math.random() * landZones.length)];
             
-            if(el) {
-                el.classList.add('country-flash');
-                setTimeout(() => {
-                    el.classList.remove('country-flash');
-                }, 400); // 0.4 saniye yanık kalsın
-            }
+            const dot = document.createElement('div');
+            dot.className = 'glow-point';
+            
+            // Bölge içinde küçük bir sapma (daha doğal dursun diye)
+            const jitterX = (Math.random() - 0.5) * 8;
+            const jitterY = (Math.random() - 0.5) * 8;
+            
+            dot.style.left = (zone.x + jitterX) + "%";
+            dot.style.top = (zone.y + jitterY) + "%";
+            
+            map.appendChild(dot);
+            setTimeout(() => dot.remove(), 2500);
         }
 
         setInterval(update, 100);
-        // Doğum hızına göre haritayı tetikle
-        setInterval(flashCountry, 400);
+        setInterval(createBirth, 400); // Haritada parlama hızı
 
-        // Gece yarısı yenileme
+        // Gece yarısı reset
         setInterval(() => {
-            const n = new Date();
-            if(n.getHours()==0 && n.getMinutes()==0 && n.getSeconds()==0) location.reload();
+            const d = new Date();
+            if(d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0) location.reload();
         }, 1000);
 
         update();
