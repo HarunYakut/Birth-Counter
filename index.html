@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - 2025 Realistic CBR Edition</title>
+    <title>Birth Pulse - Border Precision</title>
     <style>
         :root {
             --bg-color: #08101b;
@@ -34,7 +34,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            z-index: 10;
+            z-index: 20;
         }
 
         .label {
@@ -74,14 +74,30 @@
             justify-content: center;
         }
 
-        .map-wrapper { position: relative; width: 100%; aspect-ratio: 2/1; }
+        .map-wrapper { 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 2/1; 
+        }
 
-        .world-map-svg {
+        /* Arka plan silüeti */
+        .world-map-bg {
             position: absolute; inset: 0;
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
             background-size: 100% 100%;
-            opacity: 0.12;
+            opacity: 0.05;
             filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2.5);
+        }
+
+        /* Dinamik Çizilen Sınırlar */
+        #borderCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4; /* Sınırların belirginliği */
+            pointer-events: none;
+            z-index: 5;
         }
 
         .bubble {
@@ -130,38 +146,29 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 4px; font-weight: bold; font-size: 14px;">CALIBRATING REALISTIC CBR DATA</div>
+                    <div style="letter-spacing: 4px; font-weight: bold; font-size: 14px;">GENERATING VECTOR BORDERS</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 9px; margin-top: 8px; opacity: 0.5; font-family: monospace;">Vectorizing Landmass...</div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 8px; opacity: 0.5; font-family: monospace;">Drawing World...</div>
                 </div>
-                <div class="world-map-svg"></div>
+                <!-- Arka plan silüeti -->
+                <div class="world-map-bg"></div>
+                <!-- İnce Sınırların Çizileceği Canvas -->
+                <canvas id="borderCanvas"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        /**
-         * CBR (Births per 1000) verilerini, 2025 nüfus projeksiyonlarıyla çarparak
-         * dünya doğum paylarını (Global Birth Shares) hesapladım.
-         */
+        // --- 2025 GERÇEKÇİ CBR & NÜFUS AĞIRLIKLARI ---
         const countryShares = {
-            // ASYA (Nüfus x CBR ağırlıklı)
             IND: 18.2, CHN: 6.8, PAK: 5.2, IDN: 3.4, BGD: 2.3, PHL: 1.2, VNM: 0.9, JPN: 0.4, 
             TUR: 0.7, IRN: 0.7, THA: 0.4, KOR: 0.2, AFG: 1.1, IRQ: 0.9, SAU: 0.4, UZB: 0.5,
-            // AFRIKA (Yüksek CBR etkili)
             NGA: 5.8, ETH: 3.2, COD: 3.4, EGY: 1.6, TZA: 1.8, KEN: 1.0, ZAF: 0.9, UGA: 1.4,
-            CAF: 0.4, TCD: 0.6, SOM: 0.5, NER: 0.8, MLI: 0.7, AGO: 1.1, MRT: 0.1, BEN: 0.3,
-            CMR: 0.7, GIN: 0.3, BDI: 0.3, ZMB: 0.5, SDN: 1.3, MDG: 0.7, CIV: 0.7, MWI: 0.5,
-            BFA: 0.6, TOG: 0.2, LBR: 0.1, COG: 0.2, GNQ: 0.05, ZWE: 0.3, SLE: 0.2, SSD: 0.4,
-            // AMERIKA
-            USA: 2.8, BRA: 1.8, MEX: 1.3, COL: 0.5, ARG: 0.4, PER: 0.3, CAN: 0.2, VEN: 0.3,
-            CHL: 0.1, GTM: 0.3, ECU: 0.2, BOL: 0.2, HTI: 0.2, DOM: 0.1, HND: 0.1,
-            // AVRUPA & DİĞER
-            RUS: 0.9, DEU: 0.5, FRA: 0.5, GBR: 0.5, ITA: 0.3, ESP: 0.2, POL: 0.2, UKR: 0.1,
-            AUS: 0.2, NZL: 0.05, ISR: 0.2, PSE: 0.2, SYR: 0.3, JOR: 0.2, KAZ: 0.3
+            CAF: 0.4, TCD: 0.6, SOM: 0.5, NER: 0.8, MLI: 0.7, AGO: 1.1, USA: 2.8, BRA: 1.8, 
+            MEX: 1.3, RUS: 0.9, DEU: 0.5, FRA: 0.5, GBR: 0.5, ITA: 0.3, ESP: 0.2
         };
 
-        const DAILY_BIRTHS = 362737; // 2025 tahmini günlük doğum
+        const DAILY_BIRTHS = 362737; 
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
         const POINT_DENSITY = 75000;
@@ -171,6 +178,7 @@
         let weights = [];
 
         const mapFrame = document.getElementById('mapFrame');
+        const borderCanvas = document.getElementById('borderCanvas');
         const birthCountEl = document.getElementById('birthCount');
         const barEl = document.getElementById('bar');
         const clockWrapperEl = document.getElementById('clockWrapper');
@@ -184,12 +192,19 @@
             .then(init);
 
         async function init(geo) {
-            const canvas = document.createElement("canvas");
-            canvas.width = 2400; canvas.height = 1200;
-            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            // İki canvas kullanıyoruz: Biri nokta tespiti için (görünmez), diğeri sınırlar için (görünür)
+            const detectCanvas = document.createElement("canvas");
+            detectCanvas.width = 2400; detectCanvas.height = 1200;
+            const detCtx = detectCanvas.getContext("2d", { willReadFrequently: true });
+
+            // Görünür sınır canvası
+            borderCanvas.width = 2400; borderCanvas.height = 1200;
+            const bCtx = borderCanvas.getContext("2d");
+            bCtx.strokeStyle = "#38bdf8"; // Sınır rengi (Mavi)
+            bCtx.lineWidth = 0.5;         // İncecik çizgi
 
             function project([lon, lat]) {
-                return [(lon + 180) / 360 * canvas.width, (90 - lat) / 180 * canvas.height];
+                return [(lon + 180) / 360 * detectCanvas.width, (90 - lat) / 180 * detectCanvas.height];
             }
 
             const features = geo.features;
@@ -204,36 +219,46 @@
                 weights.push(share);
 
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `SCANNING: ${name}`;
+                loadStatusEl.innerText = `VECTORIZING: ${name}`;
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "white";
-                ctx.beginPath();
+                detCtx.clearRect(0, 0, detectCanvas.width, detectCanvas.height);
+                detCtx.fillStyle = "white";
+                
+                detCtx.beginPath();
+                bCtx.beginPath(); // Sınır için yeni yol
+                
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
                 coords.forEach(poly => {
                     poly.forEach(ring => {
                         ring.forEach((p, idx) => {
                             const [x, y] = project(p);
-                            if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                            if (idx === 0) {
+                                detCtx.moveTo(x, y);
+                                bCtx.moveTo(x, y);
+                            } else {
+                                detCtx.lineTo(x, y);
+                                bCtx.lineTo(x, y);
+                            }
                         });
                     });
                 });
-                ctx.fill();
+                detCtx.fill();
+                bCtx.stroke(); // Sınırı çiz
 
-                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                const target = Math.max(12, Math.floor((POINT_DENSITY * share) / 80)); 
+                const imgData = detCtx.getImageData(0, 0, detectCanvas.width, detectCanvas.height).data;
+                const target = Math.max(10, Math.floor((POINT_DENSITY * share) / 80)); 
                 let tries = 0;
 
                 while (countryPoints[iso].length < target && tries < target * 60) {
-                    const rx = Math.floor(Math.random() * canvas.width);
-                    const ry = Math.floor(Math.random() * canvas.height);
-                    if (imgData[(ry * canvas.width + rx) * 4 + 3] > 128) {
-                        countryPoints[iso].push({ x: (rx / canvas.width) * 100, y: (ry / canvas.height) * 100 });
+                    const rx = Math.floor(Math.random() * detectCanvas.width);
+                    const ry = Math.floor(Math.random() * detectCanvas.height);
+                    if (imgData[(ry * detectCanvas.width + rx) * 4 + 3] > 128) {
+                        countryPoints[iso].push({ x: (rx / detectCanvas.width) * 100, y: (ry / detectCanvas.height) * 100 });
                     }
                     tries++;
                 }
 
-                if (i % 25 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 20 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
             loadingOverlay.style.opacity = "0";
