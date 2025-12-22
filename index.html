@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Country Precision Pro</title>
+    <title>Birth Pulse - Ultimate Precision Final</title>
     <style>
         :root {
             --bg-color: #08101b;
@@ -28,7 +28,6 @@
             align-items: center;
         }
 
-        /* --- SOL PANEL (STATS) --- */
         .stats-panel {
             flex: 0 0 35%;
             display: flex;
@@ -45,7 +44,7 @@
         }
 
         .count {
-            font-size: 8rem;
+            font-size: 7.5rem;
             font-weight: 900;
             color: var(--deep-orange);
             line-height: 1;
@@ -91,37 +90,34 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* --- SAĞ PANEL (HARİTA) --- */
+        /* SAĞ PANEL */
         .map-panel {
-            flex: 0 0 65%;
-            height: 80%;
+            flex: 1;
+            height: 70%;
             position: relative;
-            margin-left: 20px;
+            margin-left: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2/1; /* Dünya haritası standart oranı */
         }
 
         .world-map {
-            width: 100%; height: 100%;
+            position: absolute;
+            inset: 0;
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
-            background-size: contain;
+            background-size: 100% 100%;
             background-repeat: no-repeat;
-            background-position: center;
-            opacity: 0.2;
+            opacity: 0.15;
             filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2);
         }
 
-        /* Yükleme Ekranı (Harita içinde) */
-        #loading-overlay {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            background: rgba(8, 16, 27, 0.9);
-            z-index: 50; color: var(--map-blue);
-        }
-
-        .loader-bar-bg { width: 200px; height: 4px; background: #1e293b; margin-top: 10px; border-radius: 4px; overflow: hidden; }
-        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); transition: width 0.1s; }
-
-        /* Doğum Baloncuğu */
+        /* BALONCUK */
         .bubble {
             position: absolute;
             width: 10px; height: 10px;
@@ -129,21 +125,32 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             box-shadow: 0 0 15px var(--deep-orange), 0 0 30px var(--deep-orange);
-            animation: bubbleAnim 2.5s ease-out forwards;
+            animation: bubbleAnim 2.5s cubic-bezier(0, 0, 0.2, 1) forwards;
             pointer-events: none;
+            z-index: 999;
         }
 
         @keyframes bubbleAnim {
             0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
-            15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            15% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
         }
+
+        #loading-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: var(--bg-color);
+            z-index: 2000; color: var(--map-blue);
+        }
+
+        .loader-bar-bg { width: 250px; height: 4px; background: #1e293b; margin-top: 15px; border-radius: 4px; overflow: hidden; }
+        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); transition: width 0.1s; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- SOL PANEL: İstatistikler -->
         <div class="stats-panel">
             <div class="label">World Births Today</div>
             <div class="count" id="birthCount">0</div>
@@ -155,25 +162,24 @@
             </div>
         </div>
 
-        <!-- SAĞ PANEL: Harita -->
-        <div class="map-panel" id="mapFrame">
-            <div id="loading-overlay">
-                <div style="letter-spacing: 2px; font-size: 12px;">CALIBRATING GLOBAL DATA</div>
-                <div class="loader-bar-bg"><div class="loader-bar-fill" id="load-progress"></div></div>
-                <div id="load-status" style="font-size: 10px; margin-top: 5px; opacity: 0.6;">Fetching...</div>
+        <div class="map-panel">
+            <div class="map-wrapper" id="mapFrame">
+                <div id="loading-overlay">
+                    <div style="letter-spacing: 3px; font-size: 14px; font-weight: bold;">INITIALIZING PULSE</div>
+                    <div class="loader-bar-bg"><div class="loader-bar-fill" id="load-progress"></div></div>
+                    <div id="load-status" style="font-size: 11px; margin-top: 8px; opacity: 0.6; font-family: monospace;">Fetching GeoData...</div>
+                </div>
+                <div class="world-map"></div>
             </div>
-            <div class="world-map"></div>
         </div>
     </div>
 
     <script>
-        // --- AYARLAR ---
         const DAILY_BIRTHS = 385000;
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
-        const TOTAL_POINTS_POOL = 25000;
+        const TOTAL_POINTS_POOL = 35000;
 
-        // Ülke Doğum Payları (UN/WorldBank Yaklaşık)
         const countryBirthShare = {
             IND:0.172, CHN:0.104, NGA:0.062, PAK:0.045, IDN:0.041, ETH:0.032, USA:0.029, COD:0.028, 
             BGD:0.026, BRA:0.024, MEX:0.019, PHL:0.018, EGY:0.017, VNM:0.016, TUR:0.013, IRN:0.012, 
@@ -194,10 +200,10 @@
         let countryList = [];
         let weights = [];
 
-        // --- 1. HARİTA DATA HAZIRLIĞI ---
         fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
             .then(r => r.json())
-            .then(data => initMapData(data));
+            .then(data => initMapData(data))
+            .catch(err => { loadStatusEl.innerText = "Connection Error!"; console.error(err); });
 
         async function initMapData(geo) {
             const canvas = document.createElement("canvas");
@@ -205,31 +211,35 @@
             const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
             function project([lon, lat]) {
+                // Equirectangular Projection
                 return [(lon + 180) / 360 * canvas.width, (90 - lat) / 180 * canvas.height];
             }
 
             const features = geo.features;
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
-                const iso = f.properties.ISO_A3;
-                const name = f.properties.ADMIN || iso;
-                const share = countryBirthShare[iso] || 0.0015; // Listede yoksa küçük bir pay ver
+                const iso = f.properties.ISO_A3 || f.properties.ISO_A2 || i.toString();
+                const name = f.properties.ADMIN || f.properties.NAME || "Unknown";
+                const share = countryBirthShare[iso] || 0.002;
 
                 countryPoints[iso] = [];
                 countryList.push(iso);
                 weights.push(share);
 
-                // Progress Update
                 const pct = Math.floor((i / features.length) * 100);
                 loadProgressEl.style.width = pct + "%";
-                loadStatusEl.innerText = `Mapping: ${name}`;
+                loadStatusEl.innerText = `SCANNING: ${name}`;
 
-                // Ülke sınırını çiz ve noktaları topla
+                // Ülkeyi Tuvale Çiz (Görünmez)
                 ctx.clearRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = "red"; // Kesin bir renk
                 ctx.beginPath();
-                const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-                coords.forEach(poly => {
-                    poly.forEach(ring => {
+                
+                const type = f.geometry.type;
+                const coords = type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+
+                coords.forEach(polygon => {
+                    polygon.forEach(ring => {
                         ring.forEach((p, idx) => {
                             const [cx, cy] = project(p);
                             if (idx === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
@@ -238,37 +248,41 @@
                 });
                 ctx.fill();
 
-                const img = ctx.getImageData(0,0,canvas.width, canvas.height).data;
-                const targetPoints = Math.max(5, Math.floor(TOTAL_POINTS_POOL * share));
+                // Noktaları Tespit Et
+                const imgData = ctx.getImageData(0,0,canvas.width, canvas.height).data;
+                const targetPoints = Math.max(15, Math.floor(TOTAL_POINTS_POOL * share));
                 let tries = 0;
-                while(countryPoints[iso].length < targetPoints && tries < targetPoints * 40) {
+
+                while(countryPoints[iso].length < targetPoints && tries < targetPoints * 60) {
                     const rx = Math.floor(Math.random() * canvas.width);
                     const ry = Math.floor(Math.random() * canvas.height);
-                    if(img[(ry * canvas.width + rx) * 4 + 3] > 0) {
-                        countryPoints[iso].push({ x: rx/canvas.width*100, y: ry/canvas.height*100 });
+                    const alpha = imgData[(ry * canvas.width + rx) * 4 + 3]; // Alpha kanalına bak
+                    if(alpha > 128) {
+                        countryPoints[iso].push({ x: (rx/canvas.width)*100, y: (ry/canvas.height)*100 });
                     }
                     tries++;
                 }
 
-                // UI Donmasın diye ara ver
-                if (i % 8 === 0) await new Promise(r => setTimeout(r, 0));
+                // Debug: İlk birkaç ülkeyi kontrol et
+                if(i < 5) console.log(`Country ${name} (${iso}): Found ${countryPoints[iso].length} points.`);
+
+                if (i % 12 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
-            loadingOverlay.style.display = "none";
+            console.log("Mapping complete. Starting pulse...");
+            loadingOverlay.style.opacity = "0";
+            setTimeout(() => loadingOverlay.style.display = "none", 500);
             startCycles();
         }
 
-        // --- 2. DÖNGÜLER (SAYAÇ VE DOĞUM) ---
         function updateUI() {
             const now = new Date();
             const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const msPassed = now - startOfDay;
             
-            // Sayaç
             const currentBirths = Math.floor(msPassed * BIRTH_RATE);
             birthCountEl.innerText = currentBirths.toLocaleString('en-US');
             
-            // Progress Bar & Saat
             const dayPercent = (msPassed / MS_DAY) * 100;
             barEl.style.width = dayPercent + "%";
             clockWrapperEl.style.left = dayPercent + "%";
@@ -276,10 +290,10 @@
         }
 
         function createBubble() {
-            // Ağırlıklı ülke seçimi
             const totalWeight = weights.reduce((a,b) => a + b, 0);
             let r = Math.random() * totalWeight;
             let selectedIso = countryList[0];
+            
             for(let i=0; i<countryList.length; i++) {
                 r -= weights[i];
                 if(r <= 0) { selectedIso = countryList[i]; break; }
@@ -288,7 +302,6 @@
             const points = countryPoints[selectedIso];
             if(!points || points.length === 0) return;
 
-            // Ülke içinden rastgele nokta seç
             const pt = points[Math.floor(Math.random() * points.length)];
             
             const b = document.createElement('div');
@@ -297,20 +310,21 @@
             b.style.top = pt.y + "%";
             
             mapFrame.appendChild(b);
-            setTimeout(() => b.remove(), 2500);
+            setTimeout(() => b.remove(), 2600);
         }
 
         let lastTime = Date.now(), carry = 0;
         function startCycles() {
-            // Sayaç döngüsü
             setInterval(updateUI, 100);
 
-            // Akıcı doğum döngüsü
             function birthLoop() {
                 const now = Date.now();
                 const dt = now - lastTime;
                 lastTime = now;
-                carry += dt * BIRTH_RATE;
+                
+                // Zaman atlamalarını kontrol et (örneğin sekme değişince)
+                const effectiveDt = Math.min(dt, 1000); 
+                carry += effectiveDt * BIRTH_RATE;
 
                 while(carry >= 1) {
                     createBubble();
@@ -321,12 +335,11 @@
             birthLoop();
         }
 
-        // Gün sonu yenileme
+        // Gece yarısı reset
         setInterval(() => {
-            const now = new Date();
-            if(now.getHours()==0 && now.getMinutes()==0 && now.getSeconds()==0) location.reload();
+            const n = new Date();
+            if(n.getHours()==0 && n.getMinutes()==0 && n.getSeconds()==0) location.reload();
         }, 1000);
-
     </script>
 </body>
 </html>
