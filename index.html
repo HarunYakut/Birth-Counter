@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - 100% Comprehensive Global</title>
+    <title>Birth Pulse - 2025 Realistic CBR Edition</title>
     <style>
         :root {
             --bg-color: #08101b;
@@ -28,6 +28,7 @@
             align-items: center;
         }
 
+        /* --- STATS PANEL --- */
         .stats-panel {
             flex: 0 0 32%;
             display: flex;
@@ -37,14 +38,15 @@
         }
 
         .label {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--map-blue);
-            letter-spacing: 5px;
+            letter-spacing: 4px;
             text-transform: uppercase;
+            opacity: 0.9;
         }
 
         .count {
-            font-size: 7.5rem;
+            font-size: 7rem;
             font-weight: 900;
             color: var(--deep-orange);
             line-height: 1;
@@ -53,19 +55,20 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .sub-text { font-size: 1.3rem; color: var(--map-blue); opacity: 0.7; }
+        .sub-text { font-size: 1.2rem; color: var(--map-blue); opacity: 0.6; }
 
-        .progress-box { width: 100%; margin-top: 50px; position: relative; }
-        .bar-container { height: 4px; background: var(--bar-bg); border-radius: 10px; }
+        .progress-box { width: 100%; margin-top: 40px; position: relative; }
+        .bar-container { height: 3px; background: var(--bar-bg); border-radius: 10px; }
         .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
         .clock-wrapper { position: absolute; top: 15px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
-        #clock { color: var(--deep-orange); font-size: 1.1rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+        #clock { color: var(--deep-orange); font-size: 1rem; font-weight: bold; font-variant-numeric: tabular-nums; }
 
+        /* --- MAP PANEL --- */
         .map-panel {
             flex: 1;
-            height: 80%;
+            height: 75%;
             position: relative;
-            margin-left: 50px;
+            margin-left: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -77,26 +80,26 @@
             position: absolute; inset: 0;
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
             background-size: 100% 100%;
-            opacity: 0.15;
+            opacity: 0.12;
             filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2.5);
         }
 
         .bubble {
             position: absolute;
-            width: 10px; height: 10px;
+            width: 5px; height: 5px;
             background: var(--deep-orange);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px var(--deep-orange), 0 0 30px var(--deep-orange);
-            animation: bubbleAnim 2.8s cubic-bezier(0.1, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 8px var(--deep-orange), 0 0 16px var(--deep-orange);
+            animation: bubbleAnim 1.8s cubic-bezier(0, 0.5, 0.5, 1) forwards;
             pointer-events: none;
             z-index: 100;
         }
 
         @keyframes bubbleAnim {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            10% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(5); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+            10% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
         }
 
         #loading-overlay {
@@ -106,8 +109,8 @@
             background: var(--bg-color);
             z-index: 2000; color: var(--map-blue);
         }
-        .loader-bar-bg { width: 300px; height: 4px; background: #1e293b; margin-top: 25px; border-radius: 5px; overflow: hidden; }
-        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); transition: width 0.05s; }
+        .loader-bar-bg { width: 200px; height: 2px; background: #1e293b; margin-top: 20px; border-radius: 5px; overflow: hidden; }
+        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); }
     </style>
 </head>
 <body>
@@ -127,9 +130,9 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 18px;">GLOBAL MAPPING: 230+ TERRITORIES</div>
+                    <div style="letter-spacing: 4px; font-weight: bold; font-size: 14px;">CALIBRATING REALISTIC CBR DATA</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 11px; margin-top: 10px; opacity: 0.6; font-family: monospace;">Vectorizing Landmass...</div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 8px; opacity: 0.5; font-family: monospace;">Vectorizing Landmass...</div>
                 </div>
                 <div class="world-map-svg"></div>
             </div>
@@ -137,26 +140,31 @@
     </div>
 
     <script>
-        // --- DATASET: 230+ Ülke ve Bölge Doğum Payları (Ağırlıklı) ---
+        /**
+         * CBR (Births per 1000) verilerini, 2025 nüfus projeksiyonlarıyla çarparak
+         * dünya doğum paylarını (Global Birth Shares) hesapladım.
+         */
         const countryShares = {
-            // ASYA
-            IND: 17.58, CHN: 7.02, PAK: 5.12, IDN: 3.32, BGD: 2.21, PHL: 1.05, VNM: 0.98, JPN: 0.52, TUR: 0.73, IRN: 0.72, THA: 0.35, KOR: 0.22, AFG: 1.08, IRQ: 0.78, SAU: 0.42, UZB: 0.58, MMR: 0.61, MYS: 0.34, KAZ: 0.28, NPL: 0.41, LKA: 0.18, KHM: 0.25, SYR: 0.36, JOR: 0.15, AZE: 0.11, ARE: 0.08, TJK: 0.19, LAO: 0.12, KGZ: 0.13, TKM: 0.09, LBN: 0.06, OMN: 0.06, KWT: 0.04, MNG: 0.05, ARM: 0.03, QAT: 0.02, BHR: 0.01, TLS: 0.03, BTN: 0.01, MDV: 0.005, BRN: 0.005,
-            // AFRIKA
-            NGA: 5.62, ETH: 3.05, COD: 3.22, EGY: 1.54, TZA: 1.72, KEN: 0.88, ZAF: 0.91, UGA: 1.32, SDN: 1.35, DZA: 0.62, MAR: 0.45, GHA: 0.68, MOZ: 0.92, AGO: 1.05, CIV: 0.71, MDG: 0.75, CMR: 0.72, NER: 0.82, BFA: 0.58, MLI: 0.74, MWI: 0.48, ZMB: 0.56, SOM: 0.52, SEN: 0.42, TCD: 0.65, GINE: 0.38, RWA: 0.25, BEN: 0.35, TUN: 0.11, BDI: 0.35, SSD: 0.38, SLE: 0.22, TGO: 0.21, LBY: 0.08, COG: 0.18, ERI: 0.09, LBR: 0.15, CAF: 0.14, MRT: 0.12, NAM: 0.06, BWA: 0.05, GMB: 0.08, GNB: 0.06, LSO: 0.04, GAB: 0.04, MUS: 0.01, SWZ: 0.03, DJB: 0.02, COM: 0.02, CPV: 0.01, STP: 0.008, SYC: 0.002,
+            // ASYA (Nüfus x CBR ağırlıklı)
+            IND: 18.2, CHN: 6.8, PAK: 5.2, IDN: 3.4, BGD: 2.3, PHL: 1.2, VNM: 0.9, JPN: 0.4, 
+            TUR: 0.7, IRN: 0.7, THA: 0.4, KOR: 0.2, AFG: 1.1, IRQ: 0.9, SAU: 0.4, UZB: 0.5,
+            // AFRIKA (Yüksek CBR etkili)
+            NGA: 5.8, ETH: 3.2, COD: 3.4, EGY: 1.6, TZA: 1.8, KEN: 1.0, ZAF: 0.9, UGA: 1.4,
+            CAF: 0.4, TCD: 0.6, SOM: 0.5, NER: 0.8, MLI: 0.7, AGO: 1.1, MRT: 0.1, BEN: 0.3,
+            CMR: 0.7, GIN: 0.3, BDI: 0.3, ZMB: 0.5, SDN: 1.3, MDG: 0.7, CIV: 0.7, MWI: 0.5,
+            BFA: 0.6, TOG: 0.2, LBR: 0.1, COG: 0.2, GNQ: 0.05, ZWE: 0.3, SLE: 0.2, SSD: 0.4,
             // AMERIKA
-            USA: 2.72, BRA: 1.85, MEX: 1.25, COL: 0.48, ARG: 0.44, PER: 0.35, CAN: 0.28, VEN: 0.32, CHL: 0.15, GTM: 0.32, ECU: 0.22, BOL: 0.18, HTI: 0.21, CUB: 0.08, DOM: 0.14, HND: 0.15, PRY: 0.11, SLV: 0.08, NIC: 0.09, CRC: 0.04, PAN: 0.05, PUR: 0.01, URU: 0.03, JAM: 0.03, TTO: 0.01, GUY: 0.01, SUR: 0.01, BLZ: 0.008, BHS: 0.003, BRB: 0.002, LCA: 0.001, GRD: 0.001,
-            // AVRUPA
-            RUS: 0.95, DEU: 0.58, FRA: 0.55, GBR: 0.52, ITA: 0.31, ESP: 0.28, POL: 0.25, UKR: 0.18, ROU: 0.12, NLD: 0.13, BEL: 0.09, CZE: 0.08, GRC: 0.06, PRT: 0.06, SWE: 0.08, HUN: 0.07, AUT: 0.06, CHE: 0.06, SRB: 0.05, BGR: 0.04, DNK: 0.05, FIN: 0.04, NOR: 0.04, SVK: 0.04, IRL: 0.04, HRV: 0.02, BIH: 0.02, MDA: 0.02, LTU: 0.02, ALB: 0.02, MKD: 0.01, SVN: 0.01, LVA: 0.01, EST: 0.008, MNE: 0.005, LUX: 0.005, MLT: 0.003, ISL: 0.003, AND: 0.0001, MON: 0.0001, SMR: 0.0001, VAT: 0.0,
-            // OKYANUSYA
-            AUS: 0.22, PNG: 0.21, NZL: 0.05, FJI: 0.01, SLB: 0.01, VUT: 0.008, WSM: 0.005, KIR: 0.003, TON: 0.002, FSM: 0.002, MHL: 0.001, PLW: 0.0005, NRU: 0.0005, TUV: 0.0002,
-            // DIĞER / ÖZEL
-            GRL: 0.0005, ESH: 0.01, PSE: 0.15, TWN: 0.12, HKG: 0.03
+            USA: 2.8, BRA: 1.8, MEX: 1.3, COL: 0.5, ARG: 0.4, PER: 0.3, CAN: 0.2, VEN: 0.3,
+            CHL: 0.1, GTM: 0.3, ECU: 0.2, BOL: 0.2, HTI: 0.2, DOM: 0.1, HND: 0.1,
+            // AVRUPA & DİĞER
+            RUS: 0.9, DEU: 0.5, FRA: 0.5, GBR: 0.5, ITA: 0.3, ESP: 0.2, POL: 0.2, UKR: 0.1,
+            AUS: 0.2, NZL: 0.05, ISR: 0.2, PSE: 0.2, SYR: 0.3, JOR: 0.2, KAZ: 0.3
         };
 
-        const DAILY_BIRTHS = 385000;
+        const DAILY_BIRTHS = 362737; // 2025 tahmini günlük doğum
         const MS_DAY = 86400000;
         const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
-        const POINT_DENSITY = 80000; // Yüksek hassasiyet
+        const POINT_DENSITY = 75000;
 
         let countryPoints = {};
         let countryList = [];
@@ -173,9 +181,9 @@
 
         fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
             .then(r => r.json())
-            .then(processGeoData);
+            .then(init);
 
-        async function processGeoData(geo) {
+        async function init(geo) {
             const canvas = document.createElement("canvas");
             canvas.width = 2400; canvas.height = 1200;
             const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -190,20 +198,18 @@
                 const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || i.toString();
                 const name = f.properties.ADMIN || f.properties.NAME || "Area";
                 
-                const share = countryShares[iso] || 0.01; // Listede yoksa çok küçük pay
+                const share = countryShares[iso] || 0.04; 
                 countryPoints[iso] = [];
                 countryList.push(iso);
                 weights.push(share);
 
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `VECTORIZING: ${name}`;
+                loadStatusEl.innerText = `SCANNING: ${name}`;
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "white";
                 ctx.beginPath();
-                const type = f.geometry.type;
-                const coords = type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-
+                const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
                 coords.forEach(poly => {
                     poly.forEach(ring => {
                         ring.forEach((p, idx) => {
@@ -215,47 +221,48 @@
                 ctx.fill();
 
                 const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                const target = Math.max(10, Math.floor((POINT_DENSITY * share) / 30)); 
+                const target = Math.max(12, Math.floor((POINT_DENSITY * share) / 80)); 
                 let tries = 0;
 
-                while (countryPoints[iso].length < target && tries < target * 100) {
+                while (countryPoints[iso].length < target && tries < target * 60) {
                     const rx = Math.floor(Math.random() * canvas.width);
                     const ry = Math.floor(Math.random() * canvas.height);
-                    if (imgData[(ry * canvas.width + rx) * 4 + 3] > 128) { // Sadece kara
+                    if (imgData[(ry * canvas.width + rx) * 4 + 3] > 128) {
                         countryPoints[iso].push({ x: (rx / canvas.width) * 100, y: (ry / canvas.height) * 100 });
                     }
                     tries++;
                 }
 
-                if (i % 20 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 25 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
             loadingOverlay.style.opacity = "0";
-            setTimeout(() => loadingOverlay.style.display = "none", 600);
-            startLoop();
+            setTimeout(() => loadingOverlay.style.display = "none", 500);
+            startSim();
         }
 
-        function updateCounters() {
+        function updateUI() {
             const now = new Date();
-            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const passed = now - start;
-            birthCountEl.innerText = Math.floor(passed * BIRTH_RATE).toLocaleString('en-US');
-            const pct = (passed / MS_DAY) * 100;
-            barEl.style.width = pct + "%";
-            clockWrapperEl.style.left = pct + "%";
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const msPassed = now - startOfDay;
+            birthCountEl.innerText = Math.floor(msPassed * BIRTH_RATE).toLocaleString('en-US');
+            
+            const dayPct = (msPassed / MS_DAY) * 100;
+            barEl.style.width = dayPct + "%";
+            clockWrapperEl.style.left = dayPct + "%";
             clockEl.innerText = now.toLocaleTimeString('en-GB');
         }
 
-        function spawn() {
-            const totalW = weights.reduce((a, b) => a + b, 0);
-            let r = Math.random() * totalW;
-            let iso = countryList[0];
+        function spawnBubble() {
+            const sumW = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * sumW;
+            let pickedIso = countryList[0];
             for (let i = 0; i < countryList.length; i++) {
                 r -= weights[i];
-                if (r <= 0) { iso = countryList[i]; break; }
+                if (r <= 0) { pickedIso = countryList[i]; break; }
             }
 
-            const pts = countryPoints[iso];
+            const pts = countryPoints[pickedIso];
             if (!pts || pts.length === 0) return;
             const p = pts[Math.floor(Math.random() * pts.length)];
             
@@ -264,18 +271,18 @@
             b.style.left = p.x + "%";
             b.style.top = p.y + "%";
             mapFrame.appendChild(b);
-            setTimeout(() => b.remove(), 2800);
+            setTimeout(() => b.remove(), 1800);
         }
 
         let lastT = Date.now(), carry = 0;
-        function startLoop() {
-            setInterval(updateCounters, 100);
+        function startSim() {
+            setInterval(updateUI, 100);
             function loop() {
                 const now = Date.now();
                 const dt = Math.min(now - lastT, 1000);
                 lastT = now;
                 carry += dt * BIRTH_RATE;
-                while (carry >= 1) { spawn(); carry--; }
+                while (carry >= 1) { spawnBubble(); carry--; }
                 requestAnimationFrame(loop);
             }
             loop();
