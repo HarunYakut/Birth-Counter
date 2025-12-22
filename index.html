@@ -1,215 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Ultimate Precision</title>
-    <style>
-        :root {
-            --bg-color: #08101b;
-            --deep-orange: #f59e0b; /* Daha turuncuya kaçan amber */
-            --map-blue: #38bdf8;   /* Yazılar için parlak mavi */
-            --bar-bg: #111d2e;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birth Pulse - Ultimate Precision</title>
 
-        body, html {
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-        }
+<style>
+:root {
+    --bg-color: #08101b;
+    --deep-orange: #f59e0b;
+    --map-blue: #38bdf8;
+    --bar-bg: #111d2e;
+}
 
-        .container {
-            display: flex;
-            width: 100%; height: 100%;
-            padding: 0 50px;
-            box-sizing: border-box;
-            align-items: center;
-        }
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-color);
+    overflow: hidden;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
 
-        /* Sol Panel */
-        .stats-panel {
-            flex: 0 0 40%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+.container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 0 50px;
+    box-sizing: border-box;
+    align-items: center;
+}
 
-        .label {
-            font-size: 1.5rem;
-            color: var(--map-blue); /* Mavi Yazı */
-            letter-spacing: 5px;
-            text-transform: uppercase;
-        }
+/* LEFT PANEL */
+.stats-panel {
+    flex: 0 0 40%;
+}
 
-        .count {
-            font-size: 11rem;
-            font-weight: 900;
-            color: var(--deep-orange); /* Turuncu Sayaç */
-            line-height: 1;
-            filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.5));
-            margin: 10px 0;
-        }
+.label {
+    font-size: 1.5rem;
+    color: var(--map-blue);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
 
-        .sub-text {
-            font-size: 1.8rem;
-            color: var(--map-blue); /* Mavi Yazı */
-        }
+.count {
+    font-size: 11rem;
+    font-weight: 900;
+    color: var(--deep-orange);
+    line-height: 1;
+    filter: drop-shadow(0 0 30px rgba(245,158,11,0.5));
+}
 
-        /* İlerleyen Bar ve Saat */
-        .progress-box {
-            width: 90%;
-            margin-top: 40px;
-            position: relative;
-        }
+.sub-text {
+    font-size: 1.8rem;
+    color: var(--map-blue);
+}
 
-        .bar-container {
-            height: 8px;
-            background: var(--bar-bg);
-            border-radius: 10px;
-        }
+.progress-box {
+    width: 90%;
+    margin-top: 40px;
+    position: relative;
+}
 
-        .bar-fill {
-            height: 100%; width: 0%;
-            background: var(--deep-orange);
-            box-shadow: 0 0 15px var(--deep-orange);
-            border-radius: 10px;
-            transition: width 1s linear;
-        }
+.bar-container {
+    height: 8px;
+    background: var(--bar-bg);
+    border-radius: 10px;
+}
 
-        .clock-wrapper {
-            position: absolute;
-            top: 20px; left: 0%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            transition: left 1s linear;
-        }
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--deep-orange);
+    box-shadow: 0 0 15px var(--deep-orange);
+    border-radius: 10px;
+    transition: width 0.5s linear;
+}
 
-        #clock {
-            color: var(--deep-orange);
-            font-size: 1.5rem;
-            font-weight: bold;
-            font-variant-numeric: tabular-nums;
-        }
+.clock-wrapper {
+    position: absolute;
+    top: 20px;
+    transform: translateX(-50%);
+}
 
-        /* Sağ Panel - Harita */
-        .map-panel {
-            flex: 0 0 60%;
-            height: 85%;
-            position: relative;
-        }
+#clock {
+    color: var(--deep-orange);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
 
-        .world-map {
-            width: 100%; height: 100%;
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            opacity: 0.25;
-            filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2);
-        }
+/* MAP */
+.map-panel {
+    flex: 0 0 60%;
+    height: 85%;
+    position: relative;
+}
 
-        /* Turuncu Bubble */
-        .bubble {
-            position: absolute;
-            width: 12px; height: 12px;
-            background: var(--deep-orange);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px var(--deep-orange), 0 0 40px var(--deep-orange);
-            animation: bubbleAnim 2.5s ease-out forwards;
-            z-index: 100;
-        }
+.world-map {
+    width: 100%;
+    height: 100%;
+    background-image: url("https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.25;
+    filter: brightness(0.8) sepia(1) hue-rotate(165deg) saturate(2);
+}
 
-        @keyframes bubbleAnim {
-            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
-            15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
-        }
-    </style>
+/* BUBBLE */
+.bubble {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--deep-orange);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow:
+        0 0 20px var(--deep-orange),
+        0 0 40px var(--deep-orange);
+    animation: bubbleAnim 2.5s ease-out forwards;
+    z-index: 10;
+}
+
+@keyframes bubbleAnim {
+    0%   { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+    15%  { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <div class="stats-panel">
-            <div class="label">World Births Today</div>
-            <div class="count" id="birthCount">0</div>
-            <div class="sub-text">new lives welcomed today</div>
+<div class="container">
 
-            <div class="progress-box">
-                <div class="bar-container"><div class="bar-fill" id="bar"></div></div>
-                <div class="clock-wrapper" id="clockWrapper"><span id="clock">00:00:00</span></div>
+    <div class="stats-panel">
+        <div class="label">World Births Today</div>
+        <div class="count" id="birthCount">0</div>
+        <div class="sub-text">new lives welcomed today</div>
+
+        <div class="progress-box">
+            <div class="bar-container">
+                <div class="bar-fill" id="bar"></div>
             </div>
-        </div>
-
-        <div class="map-panel" id="mapFrame">
-            <div class="world-map"></div>
+            <div class="clock-wrapper" id="clockWrapper">
+                <span id="clock">00:00:00</span>
+            </div>
         </div>
     </div>
 
-    <script>
-        const DAILY_BIRTHS = 385000;
-        const MS_DAY = 86400000;
-        const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
+    <div class="map-panel" id="mapFrame">
+        <div class="world-map"></div>
+    </div>
 
-        // ULTRA HASSAS KARA KOORDİNATLARI (Denizlerden tamamen uzak, iç bölgeler)
-        const weightedZones = [
-            // Asya (Dev Ağırlık)
-            {n: "India Core", x: 74, y: 38, w: 30}, {n: "China East", x: 82, y: 32, w: 20},
-            {n: "SE Asia", x: 84, y: 48, w: 10}, {n: "Turkey Inner", x: 58, y: 25, w: 5},
-            // Afrika (Derin Karalar)
-            {n: "Central Africa", x: 54, y: 55, w: 15}, {n: "West Africa", x: 48, y: 48, w: 12},
-            {n: "East Africa", x: 60, y: 50, w: 10},
-            // Amerika (İç Kesimler)
-            {n: "Brazil Amazon", x: 35, y: 65, w: 7}, {n: "USA Mid", x: 22, y: 30, w: 6},
-            {n: "Mexico Center", x: 18, y: 40, w: 4},
-            // Avrupa
-            {n: "Europe Main", x: 50, y: 24, w: 3}, {n: "Russia West", x: 60, y: 18, w: 2},
-            // Okyanusya (Çöle yakın iç kısımlar)
-            {n: "Australia Center", x: 85, y: 78, w: 1}
-        ];
+</div>
 
-        function updateUI() {
-            const now = new Date();
-            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const passed = now - start;
-            document.getElementById('birthCount').innerText = Math.floor(passed * BIRTH_RATE).toLocaleString('en-US');
-            const percent = (passed / MS_DAY) * 100;
-            document.getElementById('bar').style.width = percent + "%";
-            document.getElementById('clockWrapper').style.left = percent + "%";
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-        }
+<script>
+// ---------------- CONFIG ----------------
+const DAILY_BIRTHS = 385000;
+const MS_DAY = 86400000;
+const BIRTH_RATE = DAILY_BIRTHS / MS_DAY;
 
-        function createBubble() {
-            const frame = document.getElementById('mapFrame');
-            
-            const totalW = weightedZones.reduce((s, z) => s + z.w, 0);
-            let r = Math.random() * totalW;
-            let zone = weightedZones[0];
-            for(let z of weightedZones) {
-                r -= z.w;
-                if(r <= 0) { zone = z; break; }
-            }
+// Ülke bazlı – nüfus + doğum oranı temsili
+const weightedZones = [
+    { n:"India",      x:73, y:40, w:65 },
+    { n:"China",      x:80, y:35, w:40 },
+    { n:"Nigeria",    x:52, y:52, w:25 },
+    { n:"Indonesia", x:82, y:55, w:20 },
+    { n:"Pakistan",  x:68, y:42, w:18 },
+    { n:"Brazil",    x:35, y:65, w:15 },
+    { n:"Ethiopia",  x:58, y:50, w:14 },
+    { n:"USA",       x:23, y:32, w:10 },
+    { n:"Europe",    x:50, y:26, w:8 }
+];
 
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            
-            // Sapmayı 2'ye indirdim, baloncuklar koordinatın dışına çıkamaz
-            const jitterX = (Math.random() - 0.5) * 2;
-            const jitterY = (Math.random() - 0.5) * 2;
-            
-            bubble.style.left = (zone.x + jitterX) + "%";
-            bubble.style.top = (zone.y + jitterY) + "%";
-            
-            frame.appendChild(bubble);
-            setTimeout(() => bubble.remove(), 2500);
-        }
+// ---------------- UI ----------------
+function updateUI() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const passed = now - start;
 
-        setInterval(updateUI, 100);
-        setInterval(createBubble, 350); 
-        setInterval(() => { if(new Date().getHours()==0 && new Date().getMinutes()==0 && new Date().getSeconds()==0) location.reload(); }, 1000);
-        updateUI();
-    </script>
+    document.getElementById("birthCount").innerText =
+        Math.floor(passed * BIRTH_RATE).toLocaleString("en-US");
+
+    const percent = (passed / MS_DAY) * 100;
+    document.getElementById("bar").style.width = percent + "%";
+    document.getElementById("clockWrapper").style.left = percent + "%";
+    document.getElementById("clock").innerText = now.toLocaleTimeString("en-GB");
+}
+
+// ---------------- BUBBLES ----------------
+function pickZone() {
+    const total = weightedZones.reduce((s,z)=>s+z.w,0);
+    let r = Math.random() * total;
+    for (let z of weightedZones) {
+        r -= z.w;
+        if (r <= 0) return z;
+    }
+    return weightedZones[0];
+}
+
+function createBubble() {
+    const frame = document.getElementById("mapFrame");
+    const zone = pickZone();
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.style.left = zone.x + "%";
+    bubble.style.top  = zone.y + "%";
+
+    frame.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 2500);
+}
+
+// Gerçek doğum hızına bağlı üretim
+let lastTime = Date.now();
+let carry = 0;
+
+function birthLoop() {
+    const now = Date.now();
+    const delta = now - lastTime;
+    lastTime = now;
+
+    carry += delta * BIRTH_RATE;
+
+    while (carry >= 1) {
+        createBubble();
+        carry -= 1;
+    }
+
+    requestAnimationFrame(birthLoop);
+}
+
+// ---------------- START ----------------
+setInterval(updateUI, 100);
+birthLoop();
+updateUI();
+</script>
+
 </body>
 </html>
