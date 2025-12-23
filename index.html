@@ -2,68 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - 100% Correct Match Edition</title>
+    <title>Birth Pulse - Data Verification Edition</title>
     <style>
-        :root {
-            --bg-color: #050a12;
-            --deep-orange: #f59e0b; 
-            --map-blue: #38bdf8;   
-            --land-fill: #142136; 
-            --border-color: #0a1424; 
-        }
-        body, html {
-            margin: 0; padding: 0; width: 100vw; height: 100vh;
-            overflow: hidden; background-color: var(--bg-color);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-        }
+        :root { --bg-color: #050a12; --deep-orange: #f59e0b; --map-blue: #38bdf8; --land-fill: #1a2b42; --border-color: #0a1424; }
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; }
         .container { display: flex; width: 100%; height: 100%; padding: 0 50px; box-sizing: border-box; align-items: center; }
         .stats-panel { flex: 0 0 28%; z-index: 20; }
-        .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
-        .count {
-            font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
-        }
-        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
-        .progress-box { width: 100%; margin-top: 40px; position: relative; }
-        .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
-        .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
-        .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
-        #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
-
-        .map-panel { flex: 1; height: 80%; position: relative; margin-left: 40px; display: flex; align-items: center; justify-content: center; }
+        .count { font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); text-shadow: 0 0 20px rgba(245,158,11,0.5); }
+        .map-panel { flex: 1; height: 80%; position: relative; display: flex; align-items: center; justify-content: center; }
         .map-wrapper { position: relative; width: 100%; aspect-ratio: 2.5 / 1; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
         #highlightCanvas { z-index: 3; }
-        
-        #loading-overlay {
-            position: absolute; inset: 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; background: var(--bg-color);
-            z-index: 2000; color: var(--map-blue);
-        }
-        .loader-bar-bg { width: 250px; height: 2px; background: #111d2e; margin-top: 20px; overflow: hidden; }
-        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); }
+        #loading-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 2000; color: var(--map-blue); }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="stats-panel">
-            <div class="label">World Births Today</div>
+            <div style="color:var(--map-blue); letter-spacing:3px;">WORLD BIRTHS TODAY</div>
             <div id="birthCount" class="count">0</div>
-            <div class="sub-text">new lives welcomed since midnight</div>
-            <div class="progress-box">
-                <div class="bar-container"><div id="bar" class="bar-fill"></div></div>
-                <div id="clockWrapper" class="clock-wrapper"><span id="clock">00:00:00</span></div>
-            </div>
+            <div id="clock" style="color:var(--deep-orange); font-weight:bold; font-size:1.2rem;">00:00:00</div>
         </div>
 
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div id="load-title" style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">CHECKING WORLD SENSORS</div>
-                    <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Loading GeoData...</div>
+                    <div style="letter-spacing: 5px; font-weight: bold;">VERIFYING DATA MATCHES...</div>
+                    <div id="load-status" style="font-size: 10px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Check F12 Console for full logs</div>
                 </div>
                 <canvas id="landCanvas"></canvas>
                 <canvas id="borderCanvas"></canvas>
@@ -73,54 +39,23 @@
     </div>
 
     <script>
-        // --- DATA: Pop x CBR Matrix ---
-        const rawShares = {
-            IND: 17.58, CHN: 6.32, USA: 2.67, IDN: 3.21, PAK: 5.03, NGA: 5.54, BRA: 1.84, BGD: 2.49, RUS: 0.91, ETH: 3.12, 
-            MEX: 1.45, JPN: 0.54, EGY: 1.82, PHL: 1.34, COD: 3.32, VNM: 0.98, IRN: 0.82, TUR: 0.76, DEU: 0.51, THA: 0.41, 
-            TZA: 1.76, GBR: 0.49, FRA: 0.46, ZAF: 0.85, ITA: 0.28, KEN: 1.12, MMR: 0.65, COL: 0.50, KOR: 0.15, SDN: 1.28, 
-            UGA: 1.35, ESP: 0.24, DZA: 0.60, IRQ: 0.88, ARG: 0.36, AFG: 1.05, YEM: 1.01, CAN: 0.26, AGO: 1.05, UKR: 0.11, 
-            MAR: 0.44, POL: 0.21, UZB: 0.66, MYS: 0.31, MOZ: 0.92, GHA: 0.72, PER: 0.38, SAU: 0.42, MDG: 0.74, CIV: 0.71, 
-            CMR: 0.71, NPL: 0.40, VEN: 0.32, NER: 0.88, AUS: 0.22, PRK: 0.21, SYR: 0.44, MLI: 0.73, BFA: 0.55, MWI: 0.48, 
-            ZMB: 0.53, TCD: 0.68, KAZ: 0.29, SOM: 0.61, SEN: 0.43, ROU: 0.14, GTM: 0.28, NLD: 0.14, ECU: 0.20, KHM: 0.24,
-            ZWE: 0.36, BEN: 0.35, RWA: 0.29, BDI: 0.34, BOL: 0.19, TUN: 0.11, SSD: 0.26, HTI: 0.19, BEL: 0.08, JOR: 0.16, 
-            DOM: 0.14, ARE: 0.08, HND: 0.17, CUB: 0.07, TJK: 0.19, PNG: 0.19, SWE: 0.07, CZE: 0.06, PRT: 0.06, AZE: 0.09,
-            GRC: 0.05, TGO: 0.21, HUN: 0.06, ISR: 0.12, AUT: 0.06, CHE: 0.06, SLE: 0.18, LAO: 0.04, TKM: 0.11, LBY: 0.08,
-            HKG: 0.03, KGZ: 0.11, PRY: 0.10, NIC: 0.10, SRB: 0.04, COG: 0.14, SLV: 0.07, DNK: 0.04, SGP: 0.03, LBN: 0.06,
-            LBR: 0.12, FIN: 0.03, NOR: 0.04, PSE: 0.10, CAF: 0.18, OMN: 0.06, SVK: 0.04, MRT: 0.13, IRL: 0.04, NZL: 0.04,
-            CRI: 0.04, KWT: 0.04, PAN: 0.05, HRV: 0.02, GEO: 0.03, ERI: 0.07, MNG: 0.04, URU: 0.02, PRI: 0.01, BIH: 0.02,
-            QAT: 0.02, NAM: 0.05, MDA: 0.02, ARM: 0.03, JAM: 0.02, LTU: 0.02, GMB: 0.06, ALB: 0.02, GAB: 0.05, BWA: 0.04,
-            LSO: 0.04, GNB: 0.04, SVN: 0.01, GNQ: 0.04, LVA: 0.01, MKD: 0.01, BHR: 0.01, TTO: 0.01, TLS: 0.02, CYP: 0.01,
-            EST: 0.008, MUS: 0.008, SWZ: 0.02, DJB: 0.02, FJI: 0.01, COM: 0.02, REU: 0.008, SLB: 0.01, GUY: 0.01, BTN: 0.008,
-            MAC: 0.003, LUX: 0.005, SUR: 0.008, MNE: 0.005, ESH: 0.006, MLT: 0.003, MDV: 0.004, CPV: 0.005, BRN: 0.004,
-            BLZ: 0.005, BHS: 0.003, ISL: 0.003, GLP: 0.003, MTQ: 0.002, MYT: 0.008, VUT: 0.006, GUF: 0.005, NCL: 0.003,
-            BRB: 0.002, PYF: 0.002, STP: 0.005, WSM: 0.004, CUW: 0.001, LCA: 0.001, GUM: 0.002, KIR: 0.002, SYC: 0.001,
-            GRD: 0.001, FSM: 0.001, ABW: 0.0008, JEY: 0.0006, TON: 0.001, VCT: 0.001, ATG: 0.0008, VIR: 0.0006, IMN: 0.0005,
-            AND: 0.0004, CYM: 0.0006, DMA: 0.0005, BMU: 0.0004, GGY: 0.0004, FRO: 0.0005, GRL: 0.0005, KNA: 0.0004, TCA: 0.0004,
-            ASM: 0.0004, SXM: 0.0003, MNP: 0.0003, LIE: 0.0002, GIB: 0.0003, VGB: 0.0002, MCO: 0.0002, MHL: 0.0005, SMR: 0.0001,
-            MAF: 0.0001, PLW: 0.0001, AIA: 0.0001, COK: 0.0001, NRU: 0.0002, BLM: 0.00005, WLF: 0.00006, TUV: 0.0001,
-            SPM: 0.00002, SHN: 0.00002, MSR: 0.00002, FLK: 0.00002, TKL: 0.00003, NIU: 0.00001, VAT: 0.0
+        // Senin gönderdiğin en güncel Nüfus x CBR verileri
+        const masterData = {
+            IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, 
+            MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, 
+            TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65
         };
 
-        const DAILY_BIRTHS = 367000;
-        const BIRTH_RATE = DAILY_BIRTHS / 86400000;
+        const BIRTH_RATE = 367000 / 86400000;
         const LAT_TOP = 85, LAT_BOTTOM = -58, LAT_RANGE = LAT_TOP - LAT_BOTTOM;
-
-        let countryPaths = {};
+        
+        let worldData = []; 
         let activeFlashes = []; 
-        let countryList = [];
-        let weights = [];
 
         const landCanvas = document.getElementById('landCanvas');
         const borderCanvas = document.getElementById('borderCanvas');
         const highlightCanvas = document.getElementById('highlightCanvas');
         const hCtx = highlightCanvas.getContext("2d");
-        const birthCountEl = document.getElementById('birthCount');
-        const barEl = document.getElementById('bar');
-        const clockWrapperEl = document.getElementById('clockWrapper');
-        const clockEl = document.getElementById('clock');
-        const loadProgressEl = document.getElementById('load-progress');
-        const loadStatusEl = document.getElementById('load-status');
-        const loadingOverlay = document.getElementById('loading-overlay');
 
         fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
             .then(r => r.json())
@@ -133,75 +68,78 @@
             const lCtx = landCanvas.getContext("2d");
             const bCtx = borderCanvas.getContext("2d");
 
-            function project([lon, lat]) { return [(lon + 180) / 360 * w, (LAT_TOP - lat) / LAT_RANGE * h]; }
+            console.log("--- DATA VERIFICATION START ---");
+            let verifyTable = [];
 
             const features = geo.features;
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
                 const props = f.properties;
-                // GARANTİLİ ISO TESPİTİ (Haritadaki isme göre de bakıyoruz)
-                let iso = props.ISO_A3 || props.ADM0_A3 || props.GU_A3;
-                const name = props.ADMIN || props.NAME || "";
                 
-                if (iso === "ATA" || name === "Antarctica") continue;
+                // DEDEKTİF MANTİĞİ: Tüm datayı string yapıp arıyoruz
+                const metaString = JSON.stringify(props).toLowerCase();
+                let iso = (props.ISO_A3 || props.ADM0_A3 || props.GU_A3 || "UNK").toUpperCase();
+                let originalName = props.ADMIN || props.NAME || "Unknown";
 
-                // Eğer ISO bozuksa isminden yakala (Örnek: India -> IND)
-                if (name === "India") iso = "IND";
-                if (name === "China") iso = "CHN";
+                // Manuel Düzeltmeler (Eşleşmeyi garantilemek için)
+                if (metaString.includes("india")) iso = "IND";
+                if (metaString.includes("china")) iso = "CHN";
+                if (metaString.includes("united states")) iso = "USA";
+                if (metaString.includes("turkey") || metaString.includes("türkiye")) iso = "TUR";
 
-                const share = rawShares[iso] || 0.015;
-                countryList.push(iso);
-                weights.push(share);
+                if (iso === "ATA") continue; // Antarktika'yı geç
 
-                loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `LINKING: ${name} [${iso}]`;
+                const weight = masterData[iso] || 0.05; // Listede yoksa 0.05 ver (küçük ihtimal)
+
+                // Konsol için tabloya ekle
+                verifyTable.push({ Name: originalName, ISO_Found: iso, Weight: weight });
 
                 const p2d = new Path2D();
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
                 coords.forEach(poly => poly.forEach(ring => ring.forEach((p, idx) => {
-                    const [x, y] = project(p);
-                    if (idx === 0) p2d.moveTo(x, y); else p2d.lineTo(x, y);
+                    const px = (p[0] + 180) / 360 * w;
+                    const py = (LAT_TOP - p[1]) / LAT_RANGE * h;
+                    if (idx === 0) p2d.moveTo(px, py); else p2d.lineTo(px, py);
                 })));
-                countryPaths[iso] = p2d;
 
+                worldData.push({ path: p2d, weight: weight, iso: iso });
+
+                // Çizim
                 lCtx.fillStyle = "#1a2b42"; lCtx.fill(p2d);
                 bCtx.strokeStyle = "#0a1424"; bCtx.lineWidth = 0.8; bCtx.stroke(p2d);
 
                 if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
-            // Kontrol: Hindistan ve Çin gerçekten yüklendi mi?
-            if (!countryPaths["IND"]) console.error("CRITICAL: India not found in GeoJSON!");
-            if (!countryPaths["CHN"]) console.error("CRITICAL: China not found in GeoJSON!");
+            // DOĞRULAMA: Konsola tabloyu bas!
+            console.table(verifyTable);
+            console.log("Total Countries Linked: ", worldData.length);
 
-            loadingOverlay.style.opacity = "0";
-            setTimeout(() => loadingOverlay.style.display = "none", 500);
+            document.getElementById('loading-overlay').style.display = "none";
             startSimulation();
         }
 
         function triggerFlash() {
-            const sumW = weights.reduce((a, b) => a + b, 0);
-            let r = Math.random() * sumW, picked = countryList[0];
-            for (let i = 0; i < countryList.length; i++) {
-                r -= weights[i]; if (r <= 0) { picked = countryList[i]; break; }
+            const totalWeight = worldData.reduce((s, c) => s + c.weight, 0);
+            let r = Math.random() * totalWeight;
+            for (let country of worldData) {
+                r -= country.weight;
+                if (r <= 0) {
+                    activeFlashes.push({ path: country.path, start: Date.now() });
+                    break;
+                }
             }
-            activeFlashes.push({ iso: picked, start: Date.now() });
         }
 
-        function updateUI() {
-            const now = new Date();
-            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const passed = now - start;
-            birthCountEl.innerText = Math.floor(passed * BIRTH_RATE).toLocaleString('en-US');
-            const pct = (passed / 86400000) * 100;
-            barEl.style.width = pct + "%";
-            clockWrapperEl.style.left = pct + "%";
-            clockEl.innerText = now.toLocaleTimeString('en-GB');
-        }
-
-        let lastT = Date.now(), carry = 0;
         function startSimulation() {
-            setInterval(updateUI, 100);
+            setInterval(() => {
+                const now = new Date();
+                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                document.getElementById('birthCount').innerText = Math.floor((now - start) * BIRTH_RATE).toLocaleString();
+                document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
+            }, 1000);
+
+            let lastT = Date.now(), carry = 0;
             function loop() {
                 const now = Date.now();
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
@@ -210,15 +148,12 @@
 
                 hCtx.clearRect(0, 0, 2400, 1200);
                 hCtx.globalCompositeOperation = 'lighter'; 
-
-                const flashDuration = 1400; 
                 activeFlashes = activeFlashes.filter(f => {
                     const age = now - f.start;
-                    if (age >= flashDuration) return false;
-                    const opacity = Math.pow(1 - age / flashDuration, 1.5);
-                    // Işık şiddetini artırdık
-                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.9})`;
-                    if (countryPaths[f.iso]) hCtx.fill(countryPaths[f.iso]);
+                    if (age >= 1200) return false;
+                    const op = Math.pow(1 - age / 1200, 1.6);
+                    hCtx.fillStyle = `rgba(245, 158, 11, ${op * 0.9})`;
+                    hCtx.fill(f.path);
                     return true;
                 });
                 requestAnimationFrame(loop);
