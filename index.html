@@ -2,34 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Birth Pulse - Data Verification Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birth Pulse - 100% Comprehensive 2025</title>
     <style>
-        :root { --bg-color: #050a12; --deep-orange: #f59e0b; --map-blue: #38bdf8; --land-fill: #1a2b42; --border-color: #0a1424; }
-        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; }
+        :root {
+            --bg-color: #050a12;
+            --deep-orange: #f59e0b; 
+            --map-blue: #38bdf8;   
+            --land-fill: #1a2b42; 
+            --border-color: #0a1424; 
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            overflow: hidden; background-color: var(--bg-color);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
         .container { display: flex; width: 100%; height: 100%; padding: 0 50px; box-sizing: border-box; align-items: center; }
         .stats-panel { flex: 0 0 28%; z-index: 20; }
-        .count { font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); text-shadow: 0 0 20px rgba(245,158,11,0.5); }
-        .map-panel { flex: 1; height: 80%; position: relative; display: flex; align-items: center; justify-content: center; }
+        .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
+        .count {
+            font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); line-height: 1;
+            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
+        }
+        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
+        .progress-box { width: 100%; margin-top: 40px; position: relative; }
+        .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
+        .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
+        .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
+        #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+
+        .map-panel { flex: 1; height: 80%; position: relative; margin-left: 40px; display: flex; align-items: center; justify-content: center; }
         .map-wrapper { position: relative; width: 100%; aspect-ratio: 2.5 / 1; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
         #highlightCanvas { z-index: 3; }
-        #loading-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 2000; color: var(--map-blue); }
+        
+        #loading-overlay {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; background: var(--bg-color);
+            z-index: 2000; color: var(--map-blue);
+        }
+        .loader-bar-bg { width: 250px; height: 2px; background: #111d2e; margin-top: 20px; overflow: hidden; }
+        .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="stats-panel">
-            <div style="color:var(--map-blue); letter-spacing:3px;">WORLD BIRTHS TODAY</div>
+            <div class="label">World Births Today</div>
             <div id="birthCount" class="count">0</div>
-            <div id="clock" style="color:var(--deep-orange); font-weight:bold; font-size:1.2rem;">00:00:00</div>
+            <div class="sub-text">new lives welcomed since midnight</div>
+            <div class="progress-box">
+                <div class="bar-container"><div id="bar" class="bar-fill"></div></div>
+                <div id="clockWrapper" class="clock-wrapper"><span id="clock">00:00:00</span></div>
+            </div>
         </div>
 
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold;">VERIFYING DATA MATCHES...</div>
-                    <div id="load-status" style="font-size: 10px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Check F12 Console for full logs</div>
+                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">COMPILING 235 COUNTRIES...</div>
+                    <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Processing Pop x CBR Matrix</div>
                 </div>
                 <canvas id="landCanvas"></canvas>
                 <canvas id="borderCanvas"></canvas>
@@ -39,16 +73,38 @@
     </div>
 
     <script>
-        // Senin gönderdiğin en güncel Nüfus x CBR verileri
-        const masterData = {
+        // --- DATA: Tam 235 Ülke/Bölge (Population * CBR / 1000 bazlı paylar) ---
+        const masterShares = {
             IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, 
             MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, 
-            TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65
+            TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, 
+            UGA: 0.64, ESP: 0.60, DZA: 0.59, IRQ: 0.59, ARG: 0.57, AFG: 0.55, YEM: 0.52, CAN: 0.50, AGO: 0.49, UKR: 0.49, 
+            MAR: 0.48, POL: 0.48, UZB: 0.46, MYS: 0.45, MOZ: 0.45, GHA: 0.44, PER: 0.43, SAU: 0.43, MDG: 0.41, CIV: 0.41, 
+            CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, 
+            ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23,
+            KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15,
+            BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13,
+            PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11,
+            LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08,
+            SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07,
+            SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05,
+            MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04,
+            GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02,
+            BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02, DJB: 0.01, FJI: 0.01, COM: 0.01,
+            REU: 0.01, SLB: 0.01, GUY: 0.01, BTN: 0.01, MAC: 0.01, LUX: 0.01, SUR: 0.01, MNE: 0.01, ESH: 0.01, MLT: 0.01,
+            MDV: 0.01, CPV: 0.01, BRN: 0.01, BLZ: 0.01, BHS: 0.01, ISL: 0.01, GLP: 0.01, MTQ: 0.01, MYT: 0.01, VUT: 0.01,
+            GUF: 0.01, NCL: 0.01, BRB: 0.01, PYF: 0.01, STP: 0.01, WSM: 0.01, CUW: 0.01, LCA: 0.01, GUM: 0.01, KIR: 0.01,
+            SYC: 0.01, GRD: 0.01, FSM: 0.01, ABW: 0.01, JEY: 0.01, TON: 0.01, VCT: 0.01, ATG: 0.01, VIR: 0.01, IMN: 0.01,
+            AND: 0.01, CYM: 0.01, DMA: 0.01, BMU: 0.01, GGY: 0.01, FRO: 0.01, GRL: 0.01, KNA: 0.01, TCA: 0.01, ASM: 0.01,
+            SXM: 0.01, MNP: 0.01, LIE: 0.01, GIB: 0.01, VGB: 0.01, MCO: 0.01, MHL: 0.01, SMR: 0.01, MAF: 0.01, PLW: 0.01,
+            AIA: 0.01, COK: 0.01, NRU: 0.01, BLM: 0.01, WLF: 0.01, TUV: 0.01, SPM: 0.01, SHN: 0.01, MSR: 0.01, FLK: 0.01,
+            TKL: 0.01, NIU: 0.01, VAT: 0.0
         };
 
-        const BIRTH_RATE = 367000 / 86400000;
+        const DAILY_BIRTHS = 367000;
+        const BIRTH_RATE = DAILY_BIRTHS / 86400000;
         const LAT_TOP = 85, LAT_BOTTOM = -58, LAT_RANGE = LAT_TOP - LAT_BOTTOM;
-        
+
         let worldData = []; 
         let activeFlashes = []; 
 
@@ -56,6 +112,13 @@
         const borderCanvas = document.getElementById('borderCanvas');
         const highlightCanvas = document.getElementById('highlightCanvas');
         const hCtx = highlightCanvas.getContext("2d");
+        const birthCountEl = document.getElementById('birthCount');
+        const barEl = document.getElementById('bar');
+        const clockWrapperEl = document.getElementById('clockWrapper');
+        const clockEl = document.getElementById('clock');
+        const loadProgressEl = document.getElementById('load-progress');
+        const loadStatusEl = document.getElementById('load-status');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
         fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
             .then(r => r.json())
@@ -68,7 +131,7 @@
             const lCtx = landCanvas.getContext("2d");
             const bCtx = borderCanvas.getContext("2d");
 
-            console.log("--- DATA VERIFICATION START ---");
+            console.log("--- DATA MATCHING LOG ---");
             let verifyTable = [];
 
             const features = geo.features;
@@ -76,23 +139,24 @@
                 const f = features[i];
                 const props = f.properties;
                 
-                // DEDEKTİF MANTİĞİ: Tüm datayı string yapıp arıyoruz
-                const metaString = JSON.stringify(props).toLowerCase();
+                // AKILLI DEDEKTİF: Tüm metadata'yı tara
+                const meta = JSON.stringify(props).toLowerCase();
                 let iso = (props.ISO_A3 || props.ADM0_A3 || props.GU_A3 || "UNK").toUpperCase();
-                let originalName = props.ADMIN || props.NAME || "Unknown";
+                let name = props.ADMIN || props.NAME || "Unknown";
 
-                // Manuel Düzeltmeler (Eşleşmeyi garantilemek için)
-                if (metaString.includes("india")) iso = "IND";
-                if (metaString.includes("china")) iso = "CHN";
-                if (metaString.includes("united states")) iso = "USA";
-                if (metaString.includes("turkey") || metaString.includes("türkiye")) iso = "TUR";
+                // Manuel Düzeltme (Eşleşme Garantisi)
+                if (meta.includes("india")) iso = "IND";
+                if (meta.includes("china")) iso = "CHN";
+                if (meta.includes("united states")) iso = "USA";
+                if (meta.includes("turkey") || meta.includes("türkiye")) iso = "TUR";
 
-                if (iso === "ATA") continue; // Antarktika'yı geç
+                if (iso === "ATA") continue; // Antarktika'yı atla
 
-                const weight = masterData[iso] || 0.05; // Listede yoksa 0.05 ver (küçük ihtimal)
+                const weight = masterShares[iso] || 0.01; // Listede yoksa bile küçük şans ver
+                verifyTable.push({ Name: name, ISO: iso, Weight: weight, Match: masterShares[iso] ? "✅" : "❌" });
 
-                // Konsol için tabloya ekle
-                verifyTable.push({ Name: originalName, ISO_Found: iso, Weight: weight });
+                loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
+                loadStatusEl.innerText = `LINKING: ${name.toUpperCase()} [${iso}]`;
 
                 const p2d = new Path2D();
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
@@ -108,20 +172,19 @@
                 lCtx.fillStyle = "#1a2b42"; lCtx.fill(p2d);
                 bCtx.strokeStyle = "#0a1424"; bCtx.lineWidth = 0.8; bCtx.stroke(p2d);
 
-                if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 40 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
-            // DOĞRULAMA: Konsola tabloyu bas!
-            console.table(verifyTable);
-            console.log("Total Countries Linked: ", worldData.length);
-
-            document.getElementById('loading-overlay').style.display = "none";
+            console.table(verifyTable); // F12'de tüm tabloyu gösterir
+            loadingOverlay.style.opacity = "0";
+            setTimeout(() => loadingOverlay.style.display = "none", 500);
             startSimulation();
         }
 
         function triggerFlash() {
-            const totalWeight = worldData.reduce((s, c) => s + c.weight, 0);
-            let r = Math.random() * totalWeight;
+            if (worldData.length === 0) return;
+            const totalW = worldData.reduce((s, c) => s + c.weight, 0);
+            let r = Math.random() * totalW;
             for (let country of worldData) {
                 r -= country.weight;
                 if (r <= 0) {
@@ -131,15 +194,19 @@
             }
         }
 
-        function startSimulation() {
-            setInterval(() => {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                document.getElementById('birthCount').innerText = Math.floor((now - start) * BIRTH_RATE).toLocaleString();
-                document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-            }, 1000);
+        function updateUI() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            birthCountEl.innerText = Math.floor((now - start) * BIRTH_RATE).toLocaleString();
+            const pct = ((now - start) / 86400000) * 100;
+            barEl.style.width = pct + "%";
+            clockWrapperEl.style.left = pct + "%";
+            clockEl.innerText = now.toLocaleTimeString('en-GB');
+        }
 
-            let lastT = Date.now(), carry = 0;
+        let lastT = Date.now(), carry = 0;
+        function startSimulation() {
+            setInterval(updateUI, 100);
             function loop() {
                 const now = Date.now();
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
@@ -148,11 +215,12 @@
 
                 hCtx.clearRect(0, 0, 2400, 1200);
                 hCtx.globalCompositeOperation = 'lighter'; 
+                const flashDuration = 1200; 
                 activeFlashes = activeFlashes.filter(f => {
                     const age = now - f.start;
-                    if (age >= 1200) return false;
-                    const op = Math.pow(1 - age / 1200, 1.6);
-                    hCtx.fillStyle = `rgba(245, 158, 11, ${op * 0.9})`;
+                    if (age >= flashDuration) return false;
+                    const op = Math.pow(1 - age / flashDuration, 1.6);
+                    hCtx.fillStyle = `rgba(245, 158, 11, ${op * 0.95})`;
                     hCtx.fill(f.path);
                     return true;
                 });
