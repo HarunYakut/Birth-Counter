@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - 100% Global Coverage</title>
+    <title>Birth Pulse - 100% Data Accurate Final</title>
     <style>
         :root {
             --bg-color: #050a12;
@@ -84,9 +84,9 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">MAPPING 230+ TERRITORIES</div>
+                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">CALCULATING 232 COUNTRIES</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Processing Final Data Set...</div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Processing Pop x CBR Data...</div>
                 </div>
                 <canvas id="landCanvas"></canvas>
                 <canvas id="borderCanvas"></canvas>
@@ -96,36 +96,37 @@
     </div>
 
     <script>
-        // --- 2025 MATHEMATICAL BIRTH MATRIX (CBR * Population / Total) ---
-        // Bu liste haritadaki her objenin yanma ihtimalini belirler.
+        // --- DATA: 232 ÜLKE VE BÖLGE (Pop 2025 x CBR 2025 hesaplanmış paylar) ---
         const countryShares = {
-            IND: 18.29, CHN: 6.50, USA: 2.85, IDN: 3.57, PAK: 5.21, NGA: 6.12, BRA: 1.86, BGD: 2.19, RUS: 0.95, ETH: 3.19, 
-            MEX: 1.45, JPN: 0.44, EGY: 1.88, PHL: 1.46, COD: 3.41, VNM: 1.07, IRN: 0.85, TUR: 0.79, DEU: 0.45, THA: 0.43, 
-            TZA: 1.85, GBR: 0.51, FRA: 0.48, ZAF: 0.81, ITA: 0.30, KEN: 1.12, MMR: 0.69, COL: 0.52, KOR: 0.15, SDN: 1.35, 
-            UGA: 1.42, ESP: 0.25, DZA: 0.62, IRQ: 0.90, ARG: 0.38, AFG: 1.15, YEM: 0.95, CAN: 0.27, AGO: 1.10, UKR: 0.12, 
-            MAR: 0.45, POL: 0.22, UZB: 0.61, MYS: 0.32, MOZ: 0.91, GHA: 0.71, PER: 0.35, SAU: 0.45, MDG: 0.75, CIV: 0.72, 
-            CMR: 0.72, NPL: 0.38, VEN: 0.30, NER: 0.85, AUS: 0.22, PRK: 0.18, SYR: 0.35, MLI: 0.75, BFA: 0.58, MWI: 0.48, 
-            ZMB: 0.55, TCD: 0.65, KAZ: 0.30, CHL: 0.15, SOM: 0.55, SEN: 0.45, ROU: 0.15, GTM: 0.32, NLD: 0.15, ECU: 0.22, 
-            KHM: 0.25, ZWE: 0.30, BEN: 0.38, RWA: 0.28, BDI: 0.38, BOL: 0.18, TUN: 0.12, SSD: 0.40, HTI: 0.25, BEL: 0.10, 
-            JOR: 0.15, DOM: 0.14, ARE: 0.08, HND: 0.15, CUB: 0.08, TJK: 0.20, PNG: 0.22, SWE: 0.09, CZE: 0.08, PRT: 0.06, 
-            AZE: 0.10, GRC: 0.05, TGO: 0.22, HUN: 0.08, ISR: 0.15, AUT: 0.07, CHE: 0.07, SLE: 0.25, LAO: 0.15, TKM: 0.10, 
-            LBY: 0.08, HKG: 0.03, KGZ: 0.15, PRY: 0.12, NIC: 0.10, SRB: 0.06, COG: 0.20, SLV: 0.08, DNK: 0.05, SGP: 0.03, 
-            LBN: 0.08, LBR: 0.18, FIN: 0.04, NOR: 0.05, PSE: 0.22, CAF: 0.16, OMN: 0.07, SVK: 0.04, MRT: 0.14, IRL: 0.06, 
-            NZL: 0.06, CRI: 0.06, KWT: 0.05, PAN: 0.06, HRV: 0.03, GEO: 0.04, ERI: 0.10, MNG: 0.06, URU: 0.04, PRI: 0.02, 
-            BIH: 0.03, QAT: 0.02, NAM: 0.08, MDA: 0.03, ARM: 0.03, JAM: 0.04, LTU: 0.02, GMB: 0.09, ALB: 0.02, GAB: 0.05, 
-            BWA: 0.06, LSO: 0.05, GNB: 0.08, SVN: 0.02, GNQ: 0.05, LVA: 0.01, MKD: 0.02, BHR: 0.02, TTO: 0.02, TLS: 0.03, 
-            CYP: 0.01, EST: 0.01, MUS: 0.01, SWZ: 0.04, DJB: 0.03, FJI: 0.01, COM: 0.02, REU: 0.01, SLB: 0.01, GUY: 0.02, 
-            BTN: 0.01, MAC: 0.005, LUX: 0.006, SUR: 0.01, MNE: 0.006, ESH: 0.01, MLT: 0.004, MDV: 0.005, CPV: 0.02, BRN: 0.005, 
-            BLZ: 0.01, BHS: 0.005, ISL: 0.004, GLP: 0.005, MTQ: 0.005, MYT: 0.005, VUT: 0.01, GUF: 0.005, NCL: 0.005, BRB: 0.002, 
-            PYF: 0.005, STP: 0.01, WSM: 0.006, CUW: 0.002, LCA: 0.001, GUM: 0.001, KIR: 0.004, SYC: 0.005, GRD: 0.001, FSM: 0.003, 
-            ABW: 0.001, JEY: 0.001, TON: 0.003, VCT: 0.001, ATG: 0.001, VIR: 0.001, IMN: 0.001, AND: 0.0001, CYM: 0.001, DMA: 0.0005, 
-            BMU: 0.001, GGY: 0.001, FRO: 0.001, GRL: 0.001, KNA: 0.0005, TCA: 0.0005, ASM: 0.0005, SXM: 0.0005, MNP: 0.0005, LIE: 0.0001, 
-            GIB: 0.001, VGB: 0.0005, MCO: 0.0001, MHL: 0.002, SMR: 0.0001, MAF: 0.0001, PLW: 0.001, AIA: 0.0005, COK: 0.001, NRU: 0.001, 
-            BLM: 0.0001, WLF: 0.0005, TUV: 0.0005, SPM: 0.0001, SHN: 0.0001, MSR: 0.0001, FLK: 0.0001, TKL: 0.0005, NIU: 0.0001, VAT: 0.0
+            IND: 17.58, CHN: 6.32, USA: 2.67, IDN: 3.21, PAK: 5.03, NGA: 5.54, BRA: 1.84, BGD: 2.49, RUS: 0.91, ETH: 3.12, 
+            MEX: 1.45, JPN: 0.54, EGY: 1.82, PHL: 1.34, COD: 3.32, VNM: 0.98, IRN: 0.82, TUR: 0.76, DEU: 0.51, THA: 0.41, 
+            TZA: 1.76, GBR: 0.49, FRA: 0.46, ZAF: 0.85, ITA: 0.28, KEN: 1.12, MMR: 0.65, COL: 0.50, KOR: 0.15, SDN: 1.28, 
+            UGA: 1.35, ESP: 0.24, DZA: 0.60, IRQ: 0.88, ARG: 0.36, AFG: 1.05, YEM: 1.01, CAN: 0.26, AGO: 1.05, UKR: 0.11, 
+            MAR: 0.44, POL: 0.21, UZB: 0.66, MYS: 0.31, MOZ: 0.92, GHA: 0.72, PER: 0.38, SAU: 0.42, MDG: 0.74, CIV: 0.71, 
+            CMR: 0.71, NPL: 0.40, VEN: 0.32, NER: 0.88, AUS: 0.22, PRK: 0.21, SYR: 0.44, MLI: 0.73, BFA: 0.55, MWI: 0.48, 
+            ZMB: 0.53, TCD: 0.68, KAZ: 0.29, SOM: 0.61, SEN: 0.43, ROU: 0.14, GTM: 0.28, NLD: 0.14, ECU: 0.20, KHM: 0.24,
+            ZWE: 0.36, BEN: 0.35, RWA: 0.29, BDI: 0.34, BOL: 0.19, TUN: 0.11, SSD: 0.26, HTI: 0.19, BEL: 0.08, JOR: 0.16, 
+            DOM: 0.14, ARE: 0.08, HND: 0.17, CUB: 0.07, TJK: 0.19, PNG: 0.19, SWE: 0.07, CZE: 0.06, PRT: 0.06, AZE: 0.09,
+            GRC: 0.05, TGO: 0.21, HUN: 0.06, ISR: 0.12, AUT: 0.06, CHE: 0.06, SLE: 0.18, LAO: 0.04, TKM: 0.11, LBY: 0.08,
+            HKG: 0.03, KGZ: 0.11, PRY: 0.10, NIC: 0.10, SRB: 0.04, COG: 0.14, ELV: 0.07, DNK: 0.04, SGP: 0.03, LBN: 0.06,
+            LBR: 0.12, FIN: 0.03, NOR: 0.04, PSE: 0.10, CAF: 0.18, OMN: 0.06, SVK: 0.04, MRT: 0.13, IRL: 0.04, NZL: 0.04,
+            CRI: 0.04, KWT: 0.04, PAN: 0.05, HRV: 0.02, GEO: 0.03, ERI: 0.07, MNG: 0.04, URU: 0.02, PRI: 0.01, BIH: 0.02,
+            QAT: 0.02, NAM: 0.05, MDA: 0.02, ARM: 0.03, JAM: 0.02, LTU: 0.02, GMB: 0.06, ALB: 0.02, GAB: 0.05, BWA: 0.04,
+            LSO: 0.04, GNB: 0.04, SVN: 0.01, GNQ: 0.04, LVA: 0.01, MKD: 0.01, BHR: 0.01, TTO: 0.01, TLS: 0.02, CYP: 0.01,
+            EST: 0.008, MUS: 0.008, SWZ: 0.02, DJB: 0.02, FJI: 0.01, COM: 0.02, REU: 0.008, SLB: 0.01, GUY: 0.01, BTN: 0.008,
+            MAC: 0.003, LUX: 0.005, SUR: 0.008, MNE: 0.005, ESH: 0.006, MLT: 0.003, MDV: 0.004, CPV: 0.005, BRN: 0.004,
+            BLZ: 0.005, BHS: 0.003, ISL: 0.003, GLP: 0.003, MTQ: 0.002, MYT: 0.008, VUT: 0.006, GUF: 0.005, NCL: 0.003,
+            BRB: 0.002, PYF: 0.002, STP: 0.005, WSM: 0.004, CUW: 0.001, LCA: 0.001, GUM: 0.002, KIR: 0.002, SYC: 0.001,
+            GRD: 0.001, FSM: 0.001, ABW: 0.0008, JEY: 0.0006, TON: 0.001, VCT: 0.001, ATG: 0.0008, VIR: 0.0006, IMN: 0.0005,
+            AND: 0.0004, CYM: 0.0006, DMA: 0.0005, BMU: 0.0004, GGY: 0.0004, FRO: 0.0005, GRL: 0.0005, KNA: 0.0004, TCA: 0.0004,
+            ASM: 0.0004, SXM: 0.0003, MNP: 0.0003, LIE: 0.0002, GIB: 0.0003, VGB: 0.0002, MCO: 0.0002, MHL: 0.0005, SMR: 0.0001,
+            MAF: 0.0001, PLW: 0.0001, AIA: 0.0001, COK: 0.0001, NRU: 0.0002, BLM: 0.00005, WLF: 0.00006, TUV: 0.0001,
+            SPM: 0.00002, SHN: 0.00002, MSR: 0.00002, FLK: 0.00002, TKL: 0.00003, NIU: 0.00001, VAT: 0.0
         };
 
         const DAILY_BIRTHS = 362737;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
+        
         const LAT_TOP = 85;    
         const LAT_BOTTOM = -58; 
         const LAT_RANGE = LAT_TOP - LAT_BOTTOM;
@@ -153,8 +154,7 @@
             .then(init);
 
         async function init(geo) {
-            const w = 2400; 
-            const h = Math.round(w / (360 / LAT_RANGE)); 
+            const w = 2400, h = Math.round(w / (360 / LAT_RANGE)); 
             landCanvas.width = borderCanvas.width = highlightCanvas.width = w;
             landCanvas.height = borderCanvas.height = highlightCanvas.height = h;
 
@@ -172,13 +172,12 @@
 
                 if (iso === "ATA" || f.properties.ADMIN === "Antarctica") continue;
 
-                // HER ÜLKEYE BİR ŞANS TANI (Eksik veri olsa bile)
-                const share = countryShares[iso] || 0.015;
+                const share = countryShares[iso] || 0.001; 
                 countryList.push(iso);
                 weights.push(share);
 
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `SYNCING: ${f.properties.ADMIN || iso}`;
+                loadStatusEl.innerText = `POLYGON: ${f.properties.ADMIN || iso}`;
 
                 const p2d = new Path2D();
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
@@ -202,6 +201,15 @@
             startSimulation();
         }
 
+        function triggerFlash() {
+            const sumW = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * sumW, picked = countryList[0];
+            for (let i = 0; i < countryList.length; i++) {
+                r -= weights[i]; if (r <= 0) { picked = countryList[i]; break; }
+            }
+            activeFlashes.push({ iso: picked, start: Date.now() });
+        }
+
         function updateUI() {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -211,15 +219,6 @@
             barEl.style.width = pct + "%";
             clockWrapperEl.style.left = pct + "%";
             clockEl.innerText = now.toLocaleTimeString('en-GB');
-        }
-
-        function triggerFlash() {
-            const sumW = weights.reduce((a, b) => a + b, 0);
-            let r = Math.random() * sumW, picked = countryList[0];
-            for (let i = 0; i < countryList.length; i++) {
-                r -= weights[i]; if (r <= 0) { picked = countryList[i]; break; }
-            }
-            activeFlashes.push({ iso: picked, start: Date.now() });
         }
 
         let lastT = Date.now(), carry = 0;
@@ -232,12 +231,14 @@
                 while (carry >= 1) { triggerFlash(); carry--; }
 
                 hCtx.clearRect(0, 0, 2400, 1200);
-                const flashDuration = 1100; 
+                hCtx.globalCompositeOperation = 'lighter'; 
+
+                const flashDuration = 1500; 
                 activeFlashes = activeFlashes.filter(f => {
                     const age = now - f.start;
                     if (age >= flashDuration) return false;
-                    const opacity = Math.pow(1 - age / flashDuration, 1.8);
-                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.85})`;
+                    const opacity = Math.pow(1 - age / flashDuration, 1.5);
+                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.7})`;
                     if (countryPaths[f.iso]) hCtx.fill(countryPaths[f.iso]);
                     return true;
                 });
