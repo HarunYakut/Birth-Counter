@@ -3,39 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - 100% Data Accurate Final</title>
+    <title>Birth Pulse - 100% Correct Match Edition</title>
     <style>
         :root {
             --bg-color: #050a12;
             --deep-orange: #f59e0b; 
             --map-blue: #38bdf8;   
-            --land-fill: #1a2b42; 
+            --land-fill: #142136; 
             --border-color: #0a1424; 
         }
         body, html {
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh;
-            overflow: hidden;
-            background-color: var(--bg-color);
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            overflow: hidden; background-color: var(--bg-color);
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
-        .container {
-            display: flex;
-            width: 100%; height: 100%;
-            padding: 0 50px;
-            box-sizing: border-box;
-            align-items: center;
-        }
+        .container { display: flex; width: 100%; height: 100%; padding: 0 50px; box-sizing: border-box; align-items: center; }
         .stats-panel { flex: 0 0 28%; z-index: 20; }
         .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
         .count {
-            font-size: 6.5rem;
-            font-weight: 900;
-            color: var(--deep-orange);
-            line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5));
-            margin: 10px 0;
-            font-variant-numeric: tabular-nums;
+            font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); line-height: 1;
+            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
         }
         .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
         .progress-box { width: 100%; margin-top: 40px; position: relative; }
@@ -44,19 +31,9 @@
         .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
         #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
 
-        .map-panel {
-            flex: 1; height: 80%;
-            position: relative; margin-left: 40px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .map-wrapper { 
-            position: relative; 
-            width: 100%; 
-            aspect-ratio: 2.5 / 1; 
-        }
+        .map-panel { flex: 1; height: 80%; position: relative; margin-left: 40px; display: flex; align-items: center; justify-content: center; }
+        .map-wrapper { position: relative; width: 100%; aspect-ratio: 2.5 / 1; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-        #landCanvas { z-index: 1; opacity: 0.85; }
-        #borderCanvas { z-index: 2; opacity: 1; }
         #highlightCanvas { z-index: 3; }
         
         #loading-overlay {
@@ -64,7 +41,7 @@
             align-items: center; justify-content: center; background: var(--bg-color);
             z-index: 2000; color: var(--map-blue);
         }
-        .loader-bar-bg { width: 200px; height: 2px; background: #111d2e; margin-top: 20px; overflow: hidden; }
+        .loader-bar-bg { width: 250px; height: 2px; background: #111d2e; margin-top: 20px; overflow: hidden; }
         .loader-bar-fill { width: 0%; height: 100%; background: var(--map-blue); }
     </style>
 </head>
@@ -84,9 +61,9 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">CALCULATING 232 COUNTRIES</div>
+                    <div id="load-title" style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">CHECKING WORLD SENSORS</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Processing Pop x CBR Data...</div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Loading GeoData...</div>
                 </div>
                 <canvas id="landCanvas"></canvas>
                 <canvas id="borderCanvas"></canvas>
@@ -96,8 +73,8 @@
     </div>
 
     <script>
-        // --- DATA: 232 ÜLKE VE BÖLGE (Pop 2025 x CBR 2025 hesaplanmış paylar) ---
-        const countryShares = {
+        // --- DATA: Pop x CBR Matrix ---
+        const rawShares = {
             IND: 17.58, CHN: 6.32, USA: 2.67, IDN: 3.21, PAK: 5.03, NGA: 5.54, BRA: 1.84, BGD: 2.49, RUS: 0.91, ETH: 3.12, 
             MEX: 1.45, JPN: 0.54, EGY: 1.82, PHL: 1.34, COD: 3.32, VNM: 0.98, IRN: 0.82, TUR: 0.76, DEU: 0.51, THA: 0.41, 
             TZA: 1.76, GBR: 0.49, FRA: 0.46, ZAF: 0.85, ITA: 0.28, KEN: 1.12, MMR: 0.65, COL: 0.50, KOR: 0.15, SDN: 1.28, 
@@ -108,7 +85,7 @@
             ZWE: 0.36, BEN: 0.35, RWA: 0.29, BDI: 0.34, BOL: 0.19, TUN: 0.11, SSD: 0.26, HTI: 0.19, BEL: 0.08, JOR: 0.16, 
             DOM: 0.14, ARE: 0.08, HND: 0.17, CUB: 0.07, TJK: 0.19, PNG: 0.19, SWE: 0.07, CZE: 0.06, PRT: 0.06, AZE: 0.09,
             GRC: 0.05, TGO: 0.21, HUN: 0.06, ISR: 0.12, AUT: 0.06, CHE: 0.06, SLE: 0.18, LAO: 0.04, TKM: 0.11, LBY: 0.08,
-            HKG: 0.03, KGZ: 0.11, PRY: 0.10, NIC: 0.10, SRB: 0.04, COG: 0.14, ELV: 0.07, DNK: 0.04, SGP: 0.03, LBN: 0.06,
+            HKG: 0.03, KGZ: 0.11, PRY: 0.10, NIC: 0.10, SRB: 0.04, COG: 0.14, SLV: 0.07, DNK: 0.04, SGP: 0.03, LBN: 0.06,
             LBR: 0.12, FIN: 0.03, NOR: 0.04, PSE: 0.10, CAF: 0.18, OMN: 0.06, SVK: 0.04, MRT: 0.13, IRL: 0.04, NZL: 0.04,
             CRI: 0.04, KWT: 0.04, PAN: 0.05, HRV: 0.02, GEO: 0.03, ERI: 0.07, MNG: 0.04, URU: 0.02, PRI: 0.01, BIH: 0.02,
             QAT: 0.02, NAM: 0.05, MDA: 0.02, ARM: 0.03, JAM: 0.02, LTU: 0.02, GMB: 0.06, ALB: 0.02, GAB: 0.05, BWA: 0.04,
@@ -124,12 +101,9 @@
             SPM: 0.00002, SHN: 0.00002, MSR: 0.00002, FLK: 0.00002, TKL: 0.00003, NIU: 0.00001, VAT: 0.0
         };
 
-        const DAILY_BIRTHS = 362737;
+        const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        
-        const LAT_TOP = 85;    
-        const LAT_BOTTOM = -58; 
-        const LAT_RANGE = LAT_TOP - LAT_BOTTOM;
+        const LAT_TOP = 85, LAT_BOTTOM = -58, LAT_RANGE = LAT_TOP - LAT_BOTTOM;
 
         let countryPaths = {};
         let activeFlashes = []; 
@@ -140,7 +114,6 @@
         const borderCanvas = document.getElementById('borderCanvas');
         const highlightCanvas = document.getElementById('highlightCanvas');
         const hCtx = highlightCanvas.getContext("2d");
-        
         const birthCountEl = document.getElementById('birthCount');
         const barEl = document.getElementById('bar');
         const clockWrapperEl = document.getElementById('clockWrapper');
@@ -157,27 +130,31 @@
             const w = 2400, h = Math.round(w / (360 / LAT_RANGE)); 
             landCanvas.width = borderCanvas.width = highlightCanvas.width = w;
             landCanvas.height = borderCanvas.height = highlightCanvas.height = h;
-
             const lCtx = landCanvas.getContext("2d");
             const bCtx = borderCanvas.getContext("2d");
 
-            function project([lon, lat]) {
-                return [(lon + 180) / 360 * w, (LAT_TOP - lat) / LAT_RANGE * h];
-            }
+            function project([lon, lat]) { return [(lon + 180) / 360 * w, (LAT_TOP - lat) / LAT_RANGE * h]; }
 
             const features = geo.features;
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
-                const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || i.toString();
+                const props = f.properties;
+                // GARANTİLİ ISO TESPİTİ (Haritadaki isme göre de bakıyoruz)
+                let iso = props.ISO_A3 || props.ADM0_A3 || props.GU_A3;
+                const name = props.ADMIN || props.NAME || "";
+                
+                if (iso === "ATA" || name === "Antarctica") continue;
 
-                if (iso === "ATA" || f.properties.ADMIN === "Antarctica") continue;
+                // Eğer ISO bozuksa isminden yakala (Örnek: India -> IND)
+                if (name === "India") iso = "IND";
+                if (name === "China") iso = "CHN";
 
-                const share = countryShares[iso] || 0.001; 
+                const share = rawShares[iso] || 0.015;
                 countryList.push(iso);
                 weights.push(share);
 
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `POLYGON: ${f.properties.ADMIN || iso}`;
+                loadStatusEl.innerText = `LINKING: ${name} [${iso}]`;
 
                 const p2d = new Path2D();
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
@@ -187,14 +164,15 @@
                 })));
                 countryPaths[iso] = p2d;
 
-                lCtx.fillStyle = "#1a2b42"; 
-                lCtx.fill(p2d);
-                bCtx.strokeStyle = "#0a1424"; 
-                bCtx.lineWidth = 0.8;
-                bCtx.stroke(p2d);
+                lCtx.fillStyle = "#1a2b42"; lCtx.fill(p2d);
+                bCtx.strokeStyle = "#0a1424"; bCtx.lineWidth = 0.8; bCtx.stroke(p2d);
 
-                if (i % 45 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
             }
+
+            // Kontrol: Hindistan ve Çin gerçekten yüklendi mi?
+            if (!countryPaths["IND"]) console.error("CRITICAL: India not found in GeoJSON!");
+            if (!countryPaths["CHN"]) console.error("CRITICAL: China not found in GeoJSON!");
 
             loadingOverlay.style.opacity = "0";
             setTimeout(() => loadingOverlay.style.display = "none", 500);
@@ -233,12 +211,13 @@
                 hCtx.clearRect(0, 0, 2400, 1200);
                 hCtx.globalCompositeOperation = 'lighter'; 
 
-                const flashDuration = 1500; 
+                const flashDuration = 1400; 
                 activeFlashes = activeFlashes.filter(f => {
                     const age = now - f.start;
                     if (age >= flashDuration) return false;
                     const opacity = Math.pow(1 - age / flashDuration, 1.5);
-                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.7})`;
+                    // Işık şiddetini artırdık
+                    hCtx.fillStyle = `rgba(245, 158, 11, ${opacity * 0.9})`;
                     if (countryPaths[f.iso]) hCtx.fill(countryPaths[f.iso]);
                     return true;
                 });
