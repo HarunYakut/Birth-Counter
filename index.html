@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - 100% Comprehensive 2025</title>
+    <title>Birth Pulse - Absolute Final Version</title>
     <style>
         :root {
             --bg-color: #050a12;
@@ -61,9 +61,9 @@
         <div class="map-panel">
             <div class="map-wrapper" id="mapFrame">
                 <div id="loading-overlay">
-                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">COMPILING 235 COUNTRIES...</div>
+                    <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">COMPILING 235 REGIONS</div>
                     <div class="loader-bar-bg"><div id="load-progress" class="loader-bar-fill"></div></div>
-                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Processing Pop x CBR Matrix</div>
+                    <div id="load-status" style="font-size: 9px; margin-top: 10px; opacity: 0.5; font-family: monospace;">Eşleştirmeler yapılıyor...</div>
                 </div>
                 <canvas id="landCanvas"></canvas>
                 <canvas id="borderCanvas"></canvas>
@@ -73,8 +73,8 @@
     </div>
 
     <script>
-        // --- DATA: Tam 235 Ülke/Bölge (Population * CBR / 1000 bazlı paylar) ---
-        const masterShares = {
+        // --- DATASET: Population x CBR bazlı ağırlıklar ---
+        const countryShares = {
             IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, 
             MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, 
             TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, 
@@ -83,38 +83,23 @@
             CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, 
             ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23,
             KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15,
-            BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13,
-            PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11,
-            LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08,
-            SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07,
-            SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05,
-            MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04,
-            GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02,
-            BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02, DJB: 0.01, FJI: 0.01, COM: 0.01,
-            REU: 0.01, SLB: 0.01, GUY: 0.01, BTN: 0.01, MAC: 0.01, LUX: 0.01, SUR: 0.01, MNE: 0.01, ESH: 0.01, MLT: 0.01,
-            MDV: 0.01, CPV: 0.01, BRN: 0.01, BLZ: 0.01, BHS: 0.01, ISL: 0.01, GLP: 0.01, MTQ: 0.01, MYT: 0.01, VUT: 0.01,
-            GUF: 0.01, NCL: 0.01, BRB: 0.01, PYF: 0.01, STP: 0.01, WSM: 0.01, CUW: 0.01, LCA: 0.01, GUM: 0.01, KIR: 0.01,
-            SYC: 0.01, GRD: 0.01, FSM: 0.01, ABW: 0.01, JEY: 0.01, TON: 0.01, VCT: 0.01, ATG: 0.01, VIR: 0.01, IMN: 0.01,
-            AND: 0.01, CYM: 0.01, DMA: 0.01, BMU: 0.01, GGY: 0.01, FRO: 0.01, GRL: 0.01, KNA: 0.01, TCA: 0.01, ASM: 0.01,
-            SXM: 0.01, MNP: 0.01, LIE: 0.01, GIB: 0.01, VGB: 0.01, MCO: 0.01, MHL: 0.01, SMR: 0.01, MAF: 0.01, PLW: 0.01,
-            AIA: 0.01, COK: 0.01, NRU: 0.01, BLM: 0.01, WLF: 0.01, TUV: 0.01, SPM: 0.01, SHN: 0.01, MSR: 0.01, FLK: 0.01,
-            TKL: 0.01, NIU: 0.01, VAT: 0.0
+            JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13, PRT: 0.13,
+            AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11, LAO: 0.10,
+            MDV: 0.05, SGP: 0.07, NZL: 0.07, IRL: 0.07, NOR: 0.07, FIN: 0.07, DNK: 0.07, ISL: 0.01, LUX: 0.01, VAT: 0.0
         };
 
         const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
         const LAT_TOP = 85, LAT_BOTTOM = -58, LAT_RANGE = LAT_TOP - LAT_BOTTOM;
 
-        let worldData = []; 
         let activeFlashes = []; 
+        let worldData = []; 
 
         const landCanvas = document.getElementById('landCanvas');
         const borderCanvas = document.getElementById('borderCanvas');
         const highlightCanvas = document.getElementById('highlightCanvas');
         const hCtx = highlightCanvas.getContext("2d");
         const birthCountEl = document.getElementById('birthCount');
-        const barEl = document.getElementById('bar');
-        const clockWrapperEl = document.getElementById('clockWrapper');
         const clockEl = document.getElementById('clock');
         const loadProgressEl = document.getElementById('load-progress');
         const loadStatusEl = document.getElementById('load-status');
@@ -131,51 +116,52 @@
             const lCtx = landCanvas.getContext("2d");
             const bCtx = borderCanvas.getContext("2d");
 
-            console.log("--- DATA MATCHING LOG ---");
-            let verifyTable = [];
+            function project([lon, lat]) {
+                return [(lon + 180) / 360 * w, (LAT_TOP - lat) / LAT_RANGE * h];
+            }
 
             const features = geo.features;
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
                 const props = f.properties;
+                const name = props.name || props.ADMIN || "Unknown";
+                let iso = props["ISO3166-1-Alpha-3"];
+
+                // BACKUP: ISO -99 gelirse isme göre düzelt
+                if (iso === "-99" || !iso) {
+                    if (name === "France") iso = "FRA";
+                    if (name === "Norway") iso = "NOR";
+                    if (name === "Somaliland") iso = "SOM";
+                    if (name === "Kosovo") iso = "SRB";
+                }
+
+                if (iso === "ATA" || name === "Antarctica") continue;
+
+                const weight = countryShares[iso] || 0.015;
                 
-                // AKILLI DEDEKTİF: Tüm metadata'yı tara
-                const meta = JSON.stringify(props).toLowerCase();
-                let iso = (props.ISO_A3 || props.ADM0_A3 || props.GU_A3 || "UNK").toUpperCase();
-                let name = props.ADMIN || props.NAME || "Unknown";
-
-                // Manuel Düzeltme (Eşleşme Garantisi)
-                if (meta.includes("india")) iso = "IND";
-                if (meta.includes("china")) iso = "CHN";
-                if (meta.includes("united states")) iso = "USA";
-                if (meta.includes("turkey") || meta.includes("türkiye")) iso = "TUR";
-
-                if (iso === "ATA") continue; // Antarktika'yı atla
-
-                const weight = masterShares[iso] || 0.01; // Listede yoksa bile küçük şans ver
-                verifyTable.push({ Name: name, ISO: iso, Weight: weight, Match: masterShares[iso] ? "✅" : "❌" });
-
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
-                loadStatusEl.innerText = `LINKING: ${name.toUpperCase()} [${iso}]`;
+                loadStatusEl.innerText = `LINKED: ${name.toUpperCase()} (${iso})`;
 
                 const p2d = new Path2D();
                 const coords = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-                coords.forEach(poly => poly.forEach(ring => ring.forEach((p, idx) => {
-                    const px = (p[0] + 180) / 360 * w;
-                    const py = (LAT_TOP - p[1]) / LAT_RANGE * h;
-                    if (idx === 0) p2d.moveTo(px, py); else p2d.lineTo(px, py);
-                })));
+                coords.forEach(poly => {
+                    const rings = f.geometry.type === "MultiPolygon" ? poly : [poly];
+                    rings.forEach(ring => {
+                        ring.forEach((p, idx) => {
+                            const [px, py] = project(p);
+                            if (idx === 0) p2d.moveTo(px, py); else p2d.lineTo(px, py);
+                        });
+                    });
+                });
 
                 worldData.push({ path: p2d, weight: weight, iso: iso });
 
-                // Çizim
                 lCtx.fillStyle = "#1a2b42"; lCtx.fill(p2d);
                 bCtx.strokeStyle = "#0a1424"; bCtx.lineWidth = 0.8; bCtx.stroke(p2d);
 
-                if (i % 40 === 0) await new Promise(r => setTimeout(r, 0));
+                if (i % 45 === 0) await new Promise(r => setTimeout(r, 0));
             }
 
-            console.table(verifyTable); // F12'de tüm tabloyu gösterir
             loadingOverlay.style.opacity = "0";
             setTimeout(() => loadingOverlay.style.display = "none", 500);
             startSimulation();
@@ -198,10 +184,10 @@
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             birthCountEl.innerText = Math.floor((now - start) * BIRTH_RATE).toLocaleString();
-            const pct = ((now - start) / 86400000) * 100;
-            barEl.style.width = pct + "%";
-            clockWrapperEl.style.left = pct + "%";
             clockEl.innerText = now.toLocaleTimeString('en-GB');
+            const pct = ((now - start) / 86400000) * 100;
+            document.getElementById('bar').style.width = pct + "%";
+            document.getElementById('clockWrapper').style.left = pct + "%";
         }
 
         let lastT = Date.now(), carry = 0;
@@ -213,9 +199,10 @@
                 lastT = now;
                 while (carry >= 1) { triggerFlash(); carry--; }
 
-                hCtx.clearRect(0, 0, 2400, 1200);
+                hCtx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
                 hCtx.globalCompositeOperation = 'lighter'; 
-                const flashDuration = 1200; 
+
+                const flashDuration = 1300; 
                 activeFlashes = activeFlashes.filter(f => {
                     const age = now - f.start;
                     if (age >= flashDuration) return false;
