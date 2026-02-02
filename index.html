@@ -3,20 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Surface Glow</title>
+    <title>Birth Pulse 2025 - Deep Space</title>
+    
+    <script src="https://unpkg.com/three"></script>
     <script src="https://unpkg.com/globe.gl"></script>
+    
     <style>
         :root {
-            --bg-color: #050a12;
             --gold-accent: #ffc107; 
             --map-blue: #38bdf8;   
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
-            overflow: hidden; background-color: var(--bg-color);
+            overflow: hidden; 
+            /* Realistic Space Background Image */
+            background: url('https://unpkg.com/three-globe/example/img/night-sky.png') center center no-repeat;
+            background-size: cover;
+            background-color: #000;
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
+        /* --- SHOOTING STARS (COMETS) --- */
+        .night {
+            position: absolute; width: 100%; height: 100%;
+            transform: rotateZ(45deg); z-index: 1; pointer-events: none;
+        }
+        .shooting_star {
+            position: absolute; left: 50%; top: 50%;
+            height: 2px;
+            background: linear-gradient(-45deg, rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
+            border-radius: 999px; filter: drop-shadow(0 0 6px rgba(105, 155, 255, 1));
+            animation: tail 3000ms ease-in-out infinite, shooting 3000ms ease-in-out infinite;
+        }
+        .shooting_star::before {
+            content: ''; position: absolute; top: calc(50% - 1px); right: 0;
+            height: 2px; background: linear-gradient(-45deg, rgba(0, 0, 255, 0), rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
+            transform: translateX(50%) rotateZ(45deg); border-radius: 100%;
+            animation: shining 3000ms ease-in-out infinite;
+        }
+        .shooting_star::after {
+            content: ''; position: absolute; top: calc(50% - 1px); right: 0;
+            height: 2px; background: linear-gradient(-45deg, rgba(0, 0, 255, 0), rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
+            transform: translateX(50%) rotateZ(45deg); border-radius: 100%;
+            animation: shining 3000ms ease-in-out infinite; transform: translateX(50%) rotateZ(-45deg);
+        }
+        
+        /* Randomized Timings for Comets */
+        .shooting_star:nth-child(1) { top: 0; left: 0; width: 150px; animation-delay: 4000ms; opacity: 0.6; }
+        .shooting_star:nth-child(2) { top: -20%; left: 30%; width: 250px; animation-delay: 8000ms; opacity: 0.8; }
+        .shooting_star:nth-child(3) { top: 50%; left: -20%; width: 100px; animation-delay: 2500ms; opacity: 0.4; }
+        .shooting_star:nth-child(4) { top: 30%; left: 80%; width: 180px; animation-delay: 6000ms; opacity: 0.7; }
+        .shooting_star:nth-child(5) { top: -10%; left: 90%; width: 300px; animation-delay: 11000ms; opacity: 1; }
+
+        @keyframes tail { 0% { width: 0; } 30% { width: 100px; } 100% { width: 0; } }
+        @keyframes shooting { 0% { transform: translateX(0); } 100% { transform: translateX(300px); } }
+        @keyframes shining { 0% { width: 0; } 50% { width: 30px; } 100% { width: 0; } }
+
+        /* --- UI ELEMENTS --- */
         .main-heading {
             position: absolute; top: 40px; left: 50px;
             font-size: 2rem; color: var(--gold-accent);
@@ -24,13 +67,13 @@
             letter-spacing: 2px;
             text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 8px;
             margin: 0; z-index: 100;
-            filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.4));
-            pointer-events: none;
+            filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.4)); pointer-events: none;
         }
 
         .container { 
             display: flex; width: 100%; height: 100%; 
             align-items: center; justify-content: space-between; 
+            z-index: 10; position: relative; /* Above comets */
         }
 
         .stats-panel { 
@@ -46,7 +89,7 @@
         .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
         
         .progress-box { width: 100%; margin-top: 40px; position: relative; }
-        .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
+        .bar-container { height: 2px; background: rgba(56, 189, 248, 0.2); border-radius: 10px; }
         .bar-fill { height: 100%; width: 0%; background: var(--gold-accent); box-shadow: 0 0 10px var(--gold-accent); border-radius: 10px; }
         .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
         #clock { color: var(--gold-accent); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
@@ -55,7 +98,6 @@
             flex: 1; height: 100%; position: relative; 
             display: flex; align-items: center; justify-content: flex-end; 
             overflow: hidden;
-            background: radial-gradient(circle at center, #0a1424 0%, #050a12 70%);
         }
         
         #globeViz { width: 100%; height: 100%; }
@@ -70,6 +112,14 @@
     </style>
 </head>
 <body>
+    
+    <div class="night">
+        <div class="shooting_star"></div>
+        <div class="shooting_star"></div>
+        <div class="shooting_star"></div>
+        <div class="shooting_star"></div>
+        <div class="shooting_star"></div>
+    </div>
 
     <h1 class="main-heading">Mother & Child Care</h1>
 
@@ -87,7 +137,7 @@
         <div class="globe-panel">
             <div id="loading-overlay">
                 <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">INITIALIZING</div>
-                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Loading Low-Poly Data...</div>
+                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Generating Starfield...</div>
             </div>
             <div id="globeViz"></div>
         </div>
@@ -117,7 +167,6 @@
 
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
-            
             setInterval(updateUI, 100); 
 
             function loop() {
@@ -144,8 +193,6 @@
                 if (activeFlashes.size > 0 || dirty) {
                     globe.polygonCapColor(globe.polygonCapColor());
                     globe.polygonStrokeColor(globe.polygonStrokeColor());
-                    // Note: We removed polygonAltitude from the update loop 
-                    // because it is now constant.
                 }
 
                 requestAnimationFrame(loop);
@@ -155,17 +202,13 @@
 
         function triggerFlash() {
             if (worldData.length === 0) return;
-            
             const totalWeight = worldData.reduce((sum, item) => sum + item.properties.weight, 0);
             let r = Math.random() * totalWeight;
             let selectedCountry = null;
 
             for (let f of worldData) {
                 r -= f.properties.weight;
-                if (r <= 0) {
-                    selectedCountry = f;
-                    break;
-                }
+                if (r <= 0) { selectedCountry = f; break; }
             }
 
             if (selectedCountry) {
@@ -183,8 +226,47 @@
             clockWrapperEl.style.left = pct + "%";
         }
 
+        // --- NEW: 3D STARS GENERATOR ---
+        function addStarfield(scene) {
+            const starCount = 3500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+
+            for (let i = 0; i < starCount; i++) {
+                // Random position in a large sphere (radius 300 - 800)
+                const r = 300 + Math.random() * 500;
+                const theta = 2 * Math.PI * Math.random();
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi);
+                
+                positions.push(x, y, z);
+
+                // Random star brightness (white/blue/gold)
+                const colorType = Math.random();
+                if (colorType > 0.9) { colors.push(1, 0.9, 0.5); } // Gold
+                else if (colorType > 0.7) { colors.push(0.7, 0.8, 1); } // Blue
+                else { colors.push(1, 1, 1); } // White
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 2.0,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const starField = new THREE.Points(geometry, material);
+            scene.add(starField);
+        }
+
         function initGlobe(countries) {
-            
             countries.features.forEach(f => {
                 const props = f.properties;
                 let iso = props.ISO_A3 || props.ADM0_A3 || props.GU_A3;
@@ -202,39 +284,30 @@
                 globe = Globe()
                     .width(globeContainer.clientWidth) 
                     .height(globeContainer.clientHeight)
-                    .backgroundColor('rgba(0,0,0,0)')
+                    .backgroundColor('rgba(0,0,0,0)') // Transparent to show space BG
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
                     .polygonsData(countries.features)
                     .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    
-                    // FIX: Constant Altitude prevents "detaching"
                     .polygonAltitude(() => 0.006) 
-                    
                     .polygonStrokeColor(d => {
                         const iso = d.properties.isoCode;
-                        if (activeFlashes.has(iso)) return '#ffe082'; // Bright borders on flash
+                        if (activeFlashes.has(iso)) return '#ffe082';
                         return '#112233';
                     })
                     .polygonCapColor(d => {
                         const iso = d.properties.isoCode;
                         const start = activeFlashes.get(iso);
-                        
                         if (!start) return 'rgba(26, 43, 66, 0.4)';
-
-                        // Smooth Sine Pulse
                         const elapsed = Date.now() - start;
                         const progress = Math.min(elapsed / FLASH_DURATION, 1);
                         const intensity = Math.sin(progress * Math.PI); 
-
-                        // Surface Glow (No Lift)
                         return `rgba(255, 193, 7, ${0.1 + (intensity * 0.7)})`;
                     })
-                    .polygonLabel(d => `
-                        <div style="background:#0f172a; padding:4px 8px; border-radius:4px; color:#38bdf8;">
-                            ${d.properties.NAME || d.properties.ADMIN}
-                        </div>
-                    `)
                     (document.getElementById('globeViz'));
+
+                // --- ADD STARS TO SCENE ---
+                // We access the underlying ThreeJS scene
+                addStarfield(globe.scene());
 
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.6;
