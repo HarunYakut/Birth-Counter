@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Elegant Motion</title>
+    <title>Birth Pulse 2025 - Surface Glow</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
@@ -101,9 +101,8 @@
 
         const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        const FLASH_DURATION = 1500; // ms - Longer for smoother pulse
+        const FLASH_DURATION = 1500; 
 
-        // UI Elements
         const birthCountEl = document.getElementById('birthCount');
         const clockEl = document.getElementById('clock');
         const barEl = document.getElementById('bar');
@@ -112,9 +111,8 @@
         const loadingText = document.getElementById('loading-text');
         const globeContainer = document.getElementById('globeViz');
 
-        // State
         let worldData = []; 
-        let activeFlashes = new Map(); // ISO -> startTime
+        let activeFlashes = new Map();
         let globe;
 
         function startSimulation() {
@@ -125,7 +123,6 @@
             function loop() {
                 const now = Date.now();
                 
-                // 1. Birth Trigger Logic
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
                 
@@ -136,7 +133,6 @@
                     didTrigger = true;
                 }
 
-                // 2. Cleanup expired flashes
                 let dirty = false;
                 for (const [iso, start] of activeFlashes) {
                     if (now - start > FLASH_DURATION) {
@@ -145,12 +141,11 @@
                     }
                 }
 
-                // 3. Render Globe (Only if there is active action)
-                // With Low-Poly, we can afford to update this more frequently for smooth animation
                 if (activeFlashes.size > 0 || dirty) {
                     globe.polygonCapColor(globe.polygonCapColor());
-                    globe.polygonAltitude(globe.polygonAltitude());
                     globe.polygonStrokeColor(globe.polygonStrokeColor());
+                    // Note: We removed polygonAltitude from the update loop 
+                    // because it is now constant.
                 }
 
                 requestAnimationFrame(loop);
@@ -188,7 +183,6 @@
             clockWrapperEl.style.left = pct + "%";
         }
 
-        // --- GLOBE INIT ---
         function initGlobe(countries) {
             
             countries.features.forEach(f => {
@@ -213,41 +207,27 @@
                     .polygonsData(countries.features)
                     .polygonSideColor(() => 'rgba(0,0,0,0)')
                     
-                    // --- DYNAMIC STYLING ---
+                    // FIX: Constant Altitude prevents "detaching"
+                    .polygonAltitude(() => 0.006) 
+                    
                     .polygonStrokeColor(d => {
                         const iso = d.properties.isoCode;
-                        if (activeFlashes.has(iso)) {
-                            // Border turns bright white/gold when active
-                            return '#ffe082';
-                        }
-                        return '#112233'; // Default border
+                        if (activeFlashes.has(iso)) return '#ffe082'; // Bright borders on flash
+                        return '#112233';
                     })
                     .polygonCapColor(d => {
                         const iso = d.properties.isoCode;
                         const start = activeFlashes.get(iso);
                         
-                        // Default Blue
                         if (!start) return 'rgba(26, 43, 66, 0.4)';
 
-                        // Calculate Sine Wave Pulse (0 -> 1 -> 0)
+                        // Smooth Sine Pulse
                         const elapsed = Date.now() - start;
                         const progress = Math.min(elapsed / FLASH_DURATION, 1);
-                        const intensity = Math.sin(progress * Math.PI); // Smooth curve
+                        const intensity = Math.sin(progress * Math.PI); 
 
-                        // Gold Color with Dynamic Alpha
-                        // r=255, g=193, b=7 (Gold)
+                        // Surface Glow (No Lift)
                         return `rgba(255, 193, 7, ${0.1 + (intensity * 0.7)})`;
-                    })
-                    .polygonAltitude(d => {
-                        const iso = d.properties.isoCode;
-                        const start = activeFlashes.get(iso);
-                        if (!start) return 0.005;
-
-                        // "Breathing" Altitude
-                        const elapsed = Date.now() - start;
-                        const progress = Math.min(elapsed / FLASH_DURATION, 1);
-                        const lift = Math.sin(progress * Math.PI) * 0.05; // Rise up to 0.05
-                        return 0.005 + lift;
                     })
                     .polygonLabel(d => `
                         <div style="background:#0f172a; padding:4px 8px; border-radius:4px; color:#38bdf8;">
