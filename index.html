@@ -11,7 +11,6 @@
             --map-blue: #38bdf8;   
             --land-fill: #1a2b42; 
             --border-color: #0a1424; 
-            --neon-purple: #d946ef; /* NEW: Added for the heading */
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
@@ -19,21 +18,26 @@
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* --- NEW HEADING STYLE --- */
+        /* --- UPDATED HEADING STYLE --- */
         .main-heading {
             position: absolute;
-            top: 30px;
+            top: 40px;
             left: 50px;
-            font-size: 1.5rem;
-            color: var(--neon-purple);
+            /* 1.3x larger (approx 2rem) */
+            font-size: 2rem; 
+            /* Matching the interface "Highlight" color (Orange) */
+            color: var(--deep-orange);
+            /* Matching the dashboard style (Bold, Uppercase, Glow) */
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 6px;
+            text-decoration-thickness: 3px;
+            text-underline-offset: 8px;
             margin: 0;
             z-index: 100;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            /* Adds the neon glow effect seen on the numbers */
+            filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
         }
 
         .container { display: flex; width: 100%; height: 100%; padding: 0 50px; box-sizing: border-box; align-items: center; }
@@ -68,8 +72,8 @@
 </head>
 <body>
 
-    <!-- NEW HEADING ELEMENT -->
-    <h1 class="main-heading">Mother & Child Care-Women's Health.</h1>
+    <!-- HEADING -->
+    <h1 class="main-heading">Mother & Child Care - Women's Health</h1>
 
     <div class="container">
         <div class="stats-panel">
