@@ -11,12 +11,31 @@
             --map-blue: #38bdf8;   
             --land-fill: #1a2b42; 
             --border-color: #0a1424; 
+            --neon-purple: #d946ef; /* NEW: Added for the heading */
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: var(--bg-color);
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
+
+        /* --- NEW HEADING STYLE --- */
+        .main-heading {
+            position: absolute;
+            top: 30px;
+            left: 50px;
+            font-size: 1.5rem;
+            color: var(--neon-purple);
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 6px;
+            margin: 0;
+            z-index: 100;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
         .container { display: flex; width: 100%; height: 100%; padding: 0 50px; box-sizing: border-box; align-items: center; }
         .stats-panel { flex: 0 0 28%; z-index: 20; }
         .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
@@ -49,9 +68,12 @@
 </head>
 <body>
 
+    <!-- NEW HEADING ELEMENT -->
+    <h1 class="main-heading">Mother & Child Care-Women's Health.</h1>
+
     <div class="container">
         <div class="stats-panel">
-            <div class="label">Global Births Today</div>
+            <div class="label">World Births Today</div>
             <div id="birthCount" class="count">0</div>
             <div class="sub-text">new lives welcomed since midnight</div>
             <div class="progress-box">
@@ -121,12 +143,10 @@
                 const props = f.properties;
                 const name = props.name || props.ADMIN || "Unknown";
                 
-                // Senin logunda gördüğümüz kesin anahtar: ISO3166-1-Alpha-3
                 let iso = props["ISO3166-1-Alpha-3"] || props.ISO_A3 || props.ADM0_A3;
                 
                 if (iso === "ATA" || name === "Antarctica") continue;
 
-                // Eşleşmeyenleri isimden zorla düzelt (Logundaki -99'ları kurtarır)
                 if (iso === "-99" || !iso) {
                     if (name.includes("India")) iso = "IND";
                     else if (name.includes("China")) iso = "CHN";
@@ -139,7 +159,6 @@
                 loadProgressEl.style.width = Math.floor((i / features.length) * 100) + "%";
                 loadStatusEl.innerText = `DRAWING: ${name.toUpperCase()} (${iso})`;
 
-                // --- EVRENSEL GEOMETRİ ÇİZİCİ (MultiPolygon Destekli) ---
                 const p2d = new Path2D();
                 const type = f.geometry.type;
                 const coords = f.geometry.coordinates;
@@ -164,7 +183,6 @@
 
                 worldData.push({ path: p2d, weight: weight, iso: iso });
 
-                // Statik Harita Katmanları
                 lCtx.fillStyle = "#1a2b42"; 
                 lCtx.fill(p2d);
                 bCtx.strokeStyle = "#0a1424"; 
