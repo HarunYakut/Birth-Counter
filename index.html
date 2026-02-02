@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Optimized</title>
+    <title>Birth Pulse 2025 - Elegant Motion</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
             --bg-color: #050a12;
-            --deep-orange: #f59e0b; 
+            --gold-accent: #ffc107; 
             --map-blue: #38bdf8;   
-            --land-fill: #1a2b42; 
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
@@ -19,18 +18,13 @@
         }
 
         .main-heading {
-            position: absolute;
-            top: 40px; left: 50px;
-            font-size: 2rem; 
-            color: var(--deep-orange);
-            font-weight: 800;
-            text-transform: uppercase;
+            position: absolute; top: 40px; left: 50px;
+            font-size: 2rem; color: var(--gold-accent);
+            font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px;
-            text-decoration: underline;
-            text-decoration-thickness: 3px;
-            text-underline-offset: 8px;
+            text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 8px;
             margin: 0; z-index: 100;
-            filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
+            filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.4));
             pointer-events: none;
         }
 
@@ -39,7 +33,6 @@
             align-items: center; justify-content: space-between; 
         }
 
-        /* STATS PANEL */
         .stats-panel { 
             padding-left: 50px; width: 350px; z-index: 20; 
             display: flex; flex-direction: column; justify-content: center;
@@ -47,18 +40,17 @@
 
         .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
         .count {
-            font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
+            font-size: 6.5rem; font-weight: 900; color: var(--gold-accent); line-height: 1;
+            filter: drop-shadow(0 0 20px rgba(255, 193, 7, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
         }
         .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
         
         .progress-box { width: 100%; margin-top: 40px; position: relative; }
         .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
-        .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
+        .bar-fill { height: 100%; width: 0%; background: var(--gold-accent); box-shadow: 0 0 10px var(--gold-accent); border-radius: 10px; }
         .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
-        #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+        #clock { color: var(--gold-accent); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
 
-        /* GLOBE PANEL */
         .globe-panel { 
             flex: 1; height: 100%; position: relative; 
             display: flex; align-items: center; justify-content: flex-end; 
@@ -109,7 +101,7 @@
 
         const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        const FLASH_DURATION = 1000; // ms
+        const FLASH_DURATION = 1500; // ms - Longer for smoother pulse
 
         // UI Elements
         const birthCountEl = document.getElementById('birthCount');
@@ -122,13 +114,12 @@
 
         // State
         let worldData = []; 
-        let flashingCountries = new Map();
+        let activeFlashes = new Map(); // ISO -> startTime
         let globe;
 
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
             
-            // Loop for logic & UI
             setInterval(updateUI, 100); 
 
             function loop() {
@@ -145,21 +136,21 @@
                     didTrigger = true;
                 }
 
-                // 2. Clean up old flashes
+                // 2. Cleanup expired flashes
                 let dirty = false;
-                for (const [iso, expiry] of flashingCountries) {
-                    if (now > expiry) {
-                        flashingCountries.delete(iso);
+                for (const [iso, start] of activeFlashes) {
+                    if (now - start > FLASH_DURATION) {
+                        activeFlashes.delete(iso);
                         dirty = true;
                     }
                 }
 
-                // 3. Optimized Globe Update
-                // We only force a re-render of colors if state changed.
-                // Because we use low-poly data, this is now very fast.
-                if (didTrigger || dirty) {
+                // 3. Render Globe (Only if there is active action)
+                // With Low-Poly, we can afford to update this more frequently for smooth animation
+                if (activeFlashes.size > 0 || dirty) {
                     globe.polygonCapColor(globe.polygonCapColor());
                     globe.polygonAltitude(globe.polygonAltitude());
+                    globe.polygonStrokeColor(globe.polygonStrokeColor());
                 }
 
                 requestAnimationFrame(loop);
@@ -170,7 +161,6 @@
         function triggerFlash() {
             if (worldData.length === 0) return;
             
-            // Simple weighted random
             const totalWeight = worldData.reduce((sum, item) => sum + item.properties.weight, 0);
             let r = Math.random() * totalWeight;
             let selectedCountry = null;
@@ -184,10 +174,7 @@
             }
 
             if (selectedCountry) {
-                const now = Date.now();
-                const iso = selectedCountry.properties.isoCode;
-                // Extend duration slightly for visibility
-                flashingCountries.set(iso, now + FLASH_DURATION);
+                activeFlashes.set(selectedCountry.properties.isoCode, Date.now());
             }
         }
 
@@ -204,44 +191,64 @@
         // --- GLOBE INIT ---
         function initGlobe(countries) {
             
-            // Prepare Data from the simpler GeoJSON
             countries.features.forEach(f => {
                 const props = f.properties;
-                // Natural Earth uses ISO_A3
                 let iso = props.ISO_A3 || props.ADM0_A3 || props.GU_A3;
-                
-                // Fix for missing codes in some datasets
                 if (iso === "-99" || !iso) {
                     const name = props.NAME || props.ADMIN;
                     if (name === "France") iso = "FRA";
                     else if (name === "Norway") iso = "NOR";
                 }
-                
                 f.properties.isoCode = iso;
                 f.properties.weight = countryShares[iso] || 0.02;
                 worldData.push(f);
             });
 
-            // Initialize Globe
             try {
                 globe = Globe()
                     .width(globeContainer.clientWidth) 
                     .height(globeContainer.clientHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // Removed heavy textures. Just using a simple base color via polygon logic
-                    // or a very lightweight texture if preferred.
-                    // For maximum performance and "simple" look, we omit globeImageUrl 
-                    // and rely on a base sphere or just the polygons.
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') // Kept basic night texture, but removed topology
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
                     .polygonsData(countries.features)
                     .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    .polygonStrokeColor(() => '#112233') // Darker, subtler borders
-                    .polygonCapColor(d => {
-                        return flashingCountries.has(d.properties.isoCode) 
-                            ? '#f59e0b' // Flash Orange
-                            : 'rgba(26, 43, 66, 0.4)'; // Transparent Blue-ish
+                    
+                    // --- DYNAMIC STYLING ---
+                    .polygonStrokeColor(d => {
+                        const iso = d.properties.isoCode;
+                        if (activeFlashes.has(iso)) {
+                            // Border turns bright white/gold when active
+                            return '#ffe082';
+                        }
+                        return '#112233'; // Default border
                     })
-                    .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.04 : 0.005)
+                    .polygonCapColor(d => {
+                        const iso = d.properties.isoCode;
+                        const start = activeFlashes.get(iso);
+                        
+                        // Default Blue
+                        if (!start) return 'rgba(26, 43, 66, 0.4)';
+
+                        // Calculate Sine Wave Pulse (0 -> 1 -> 0)
+                        const elapsed = Date.now() - start;
+                        const progress = Math.min(elapsed / FLASH_DURATION, 1);
+                        const intensity = Math.sin(progress * Math.PI); // Smooth curve
+
+                        // Gold Color with Dynamic Alpha
+                        // r=255, g=193, b=7 (Gold)
+                        return `rgba(255, 193, 7, ${0.1 + (intensity * 0.7)})`;
+                    })
+                    .polygonAltitude(d => {
+                        const iso = d.properties.isoCode;
+                        const start = activeFlashes.get(iso);
+                        if (!start) return 0.005;
+
+                        // "Breathing" Altitude
+                        const elapsed = Date.now() - start;
+                        const progress = Math.min(elapsed / FLASH_DURATION, 1);
+                        const lift = Math.sin(progress * Math.PI) * 0.05; // Rise up to 0.05
+                        return 0.005 + lift;
+                    })
                     .polygonLabel(d => `
                         <div style="background:#0f172a; padding:4px 8px; border-radius:4px; color:#38bdf8;">
                             ${d.properties.NAME || d.properties.ADMIN}
@@ -249,13 +256,11 @@
                     `)
                     (document.getElementById('globeViz'));
 
-                // Camera Setup
                 globe.controls().autoRotate = true;
-                globe.controls().autoRotateSpeed = 0.6; // Slightly faster rotation
+                globe.controls().autoRotateSpeed = 0.6;
                 globe.controls().enableZoom = true;
                 globe.pointOfView({ lat: 20, lng: 80, altitude: 1.8 }); 
 
-                // Handle Resize
                 window.addEventListener('resize', () => {
                     globe.width(globeContainer.clientWidth);
                     globe.height(globeContainer.clientHeight);
@@ -271,13 +276,8 @@
             }
         }
 
-        // --- FETCH OPTIMIZED DATA ---
-        // Using Natural Earth 110m (Low Poly) instead of High-Res
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
-            .then(r => {
-                if (!r.ok) throw new Error("Network response was not ok");
-                return r.json();
-            })
+            .then(r => r.json())
             .then(initGlobe)
             .catch(err => {
                 console.error(err);
