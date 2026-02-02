@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birth Pulse 2025 - Deep Space</title>
     
-    <script src="https://unpkg.com/three"></script>
-    <script src="https://unpkg.com/globe.gl"></script>
+    <script src="//unpkg.com/three"></script>
+    <script src="//unpkg.com/globe.gl"></script>
     
     <style>
         :root {
@@ -16,12 +16,20 @@
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; 
-            /* Realistic Space Background Image */
-            background: url('https://unpkg.com/three-globe/example/img/night-sky.png') center center no-repeat;
-            background-size: cover;
             background-color: #000;
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
+
+        /* --- BACKGROUND ANIMATION (Nebula Drift) --- */
+        .space-bg {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: url('https://unpkg.com/three-globe/example/img/night-sky.png') center center repeat;
+            background-size: 50% 50%;
+            opacity: 0.4;
+            animation: drift 200s linear infinite;
+            z-index: 0; pointer-events: none;
+        }
+        @keyframes drift { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         /* --- SHOOTING STARS (COMETS) --- */
         .night {
@@ -35,20 +43,14 @@
             border-radius: 999px; filter: drop-shadow(0 0 6px rgba(105, 155, 255, 1));
             animation: tail 3000ms ease-in-out infinite, shooting 3000ms ease-in-out infinite;
         }
-        .shooting_star::before {
+        .shooting_star::before, .shooting_star::after {
             content: ''; position: absolute; top: calc(50% - 1px); right: 0;
             height: 2px; background: linear-gradient(-45deg, rgba(0, 0, 255, 0), rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
             transform: translateX(50%) rotateZ(45deg); border-radius: 100%;
             animation: shining 3000ms ease-in-out infinite;
         }
-        .shooting_star::after {
-            content: ''; position: absolute; top: calc(50% - 1px); right: 0;
-            height: 2px; background: linear-gradient(-45deg, rgba(0, 0, 255, 0), rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
-            transform: translateX(50%) rotateZ(45deg); border-radius: 100%;
-            animation: shining 3000ms ease-in-out infinite; transform: translateX(50%) rotateZ(-45deg);
-        }
+        .shooting_star::after { transform: translateX(50%) rotateZ(-45deg); }
         
-        /* Randomized Timings for Comets */
         .shooting_star:nth-child(1) { top: 0; left: 0; width: 150px; animation-delay: 4000ms; opacity: 0.6; }
         .shooting_star:nth-child(2) { top: -20%; left: 30%; width: 250px; animation-delay: 8000ms; opacity: 0.8; }
         .shooting_star:nth-child(3) { top: 50%; left: -20%; width: 100px; animation-delay: 2500ms; opacity: 0.4; }
@@ -73,7 +75,7 @@
         .container { 
             display: flex; width: 100%; height: 100%; 
             align-items: center; justify-content: space-between; 
-            z-index: 10; position: relative; /* Above comets */
+            z-index: 10; position: relative; 
         }
 
         .stats-panel { 
@@ -100,7 +102,13 @@
             overflow: hidden;
         }
         
-        #globeViz { width: 100%; height: 100%; }
+        /* MOVE GLOBE TO RIGHT & MAKE BIGGER 
+           We use translateX to push it right, and scale is handled by 'altitude' in JS 
+        */
+        #globeViz { 
+            width: 100%; height: 100%; 
+            transform: translateX(15%); /* Shift Globe Right */
+        }
 
         #loading-overlay {
             position: absolute; top: 50%; left: 60%; transform: translate(-50%, -50%);
@@ -113,6 +121,8 @@
 </head>
 <body>
     
+    <div class="space-bg"></div>
+
     <div class="night">
         <div class="shooting_star"></div>
         <div class="shooting_star"></div>
@@ -137,7 +147,7 @@
         <div class="globe-panel">
             <div id="loading-overlay">
                 <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">INITIALIZING</div>
-                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Generating Starfield...</div>
+                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Generating Galaxy...</div>
             </div>
             <div id="globeViz"></div>
         </div>
@@ -164,6 +174,7 @@
         let worldData = []; 
         let activeFlashes = new Map();
         let globe;
+        let starGroup; // To hold our custom stars
 
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
@@ -172,6 +183,7 @@
             function loop() {
                 const now = Date.now();
                 
+                // 1. Logic
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
                 
@@ -190,9 +202,17 @@
                     }
                 }
 
+                // 2. Render Updates
                 if (activeFlashes.size > 0 || dirty) {
                     globe.polygonCapColor(globe.polygonCapColor());
                     globe.polygonStrokeColor(globe.polygonStrokeColor());
+                }
+
+                // 3. BACKGROUND ANIMATION (Floating Space)
+                // Rotate the entire starfield slowly to simulate "floating"
+                if (starGroup) {
+                    starGroup.rotation.y -= 0.0003; // Rotate Horizontal
+                    starGroup.rotation.x += 0.0001; // Slight vertical drift
                 }
 
                 requestAnimationFrame(loop);
@@ -226,44 +246,58 @@
             clockWrapperEl.style.left = pct + "%";
         }
 
-        // --- NEW: 3D STARS GENERATOR ---
-        function addStarfield(scene) {
-            const starCount = 3500;
-            const geometry = new THREE.BufferGeometry();
-            const positions = [];
-            const colors = [];
-
-            for (let i = 0; i < starCount; i++) {
-                // Random position in a large sphere (radius 300 - 800)
-                const r = 300 + Math.random() * 500;
+        // --- ENHANCED STARFIELD ---
+        function addRealisticStars(scene) {
+            starGroup = new THREE.Group();
+            
+            // 1. Small Background Stars (Faint, numerous)
+            const smallStarGeo = new THREE.BufferGeometry();
+            const smallPositions = [];
+            for(let i=0; i<4000; i++) {
+                const r = 400 + Math.random() * 600; // Far away
                 const theta = 2 * Math.PI * Math.random();
                 const phi = Math.acos(2 * Math.random() - 1);
-                
-                const x = r * Math.sin(phi) * Math.cos(theta);
-                const y = r * Math.sin(phi) * Math.sin(theta);
-                const z = r * Math.cos(phi);
-                
-                positions.push(x, y, z);
-
-                // Random star brightness (white/blue/gold)
-                const colorType = Math.random();
-                if (colorType > 0.9) { colors.push(1, 0.9, 0.5); } // Gold
-                else if (colorType > 0.7) { colors.push(0.7, 0.8, 1); } // Blue
-                else { colors.push(1, 1, 1); } // White
+                smallPositions.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
             }
+            smallStarGeo.setAttribute('position', new THREE.Float32BufferAttribute(smallPositions, 3));
+            const smallStarMat = new THREE.PointsMaterial({ color: 0x888888, size: 1.2, transparent: true, opacity: 0.6 });
+            const smallStars = new THREE.Points(smallStarGeo, smallStarMat);
+            starGroup.add(smallStars);
 
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-            const material = new THREE.PointsMaterial({
-                size: 2.0,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.8
+            // 2. Big Bright Stars (Closer, colorful, brighter)
+            const bigStarGeo = new THREE.BufferGeometry();
+            const bigPositions = [];
+            const bigColors = [];
+            for(let i=0; i<500; i++) {
+                const r = 350 + Math.random() * 400; // Closer
+                const theta = 2 * Math.PI * Math.random();
+                const phi = Math.acos(2 * Math.random() - 1);
+                bigPositions.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+                
+                // Colors: Blueish, White, Gold
+                const type = Math.random();
+                if(type > 0.9) bigColors.push(1, 0.9, 0.4); // Gold
+                else if(type > 0.7) bigColors.push(0.6, 0.8, 1); // Blue
+                else bigColors.push(1, 1, 1); // White
+            }
+            bigStarGeo.setAttribute('position', new THREE.Float32BufferAttribute(bigPositions, 3));
+            bigStarGeo.setAttribute('color', new THREE.Float32BufferAttribute(bigColors, 3));
+            const bigStarMat = new THREE.PointsMaterial({ 
+                size: 3.5, 
+                vertexColors: true, 
+                transparent: true, 
+                opacity: 0.9,
+                // Make them round
+                map: new THREE.TextureLoader().load('https://unpkg.com/three-globe/example/img/earth-night.jpg'), // Using default helper or just simple circle
+                blending: THREE.AdditiveBlending 
             });
+            // Since we don't have a reliable circle texture URL without CORS, we rely on squares or basic points
+            // But we can improve 'PointsMaterial' to just look bright.
+            
+            const bigStars = new THREE.Points(bigStarGeo, bigStarMat);
+            starGroup.add(bigStars);
 
-            const starField = new THREE.Points(geometry, material);
-            scene.add(starField);
+            scene.add(starGroup);
         }
 
         function initGlobe(countries) {
@@ -281,10 +315,15 @@
             });
 
             try {
+                // Ensure THREE is loaded
+                if (typeof THREE === 'undefined') {
+                    throw new Error("Three.js not loaded.");
+                }
+
                 globe = Globe()
                     .width(globeContainer.clientWidth) 
                     .height(globeContainer.clientHeight)
-                    .backgroundColor('rgba(0,0,0,0)') // Transparent to show space BG
+                    .backgroundColor('rgba(0,0,0,0)') 
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
                     .polygonsData(countries.features)
                     .polygonSideColor(() => 'rgba(0,0,0,0)')
@@ -305,14 +344,18 @@
                     })
                     (document.getElementById('globeViz'));
 
-                // --- ADD STARS TO SCENE ---
-                // We access the underlying ThreeJS scene
-                addStarfield(globe.scene());
+                // --- CONFIGURATION ---
+                // 1. Add Realistic Stars
+                addRealisticStars(globe.scene());
 
+                // 2. Camera Controls & Positioning
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.6;
                 globe.controls().enableZoom = true;
-                globe.pointOfView({ lat: 20, lng: 80, altitude: 1.8 }); 
+                
+                // ZOOM IN: altitude 1.35 (Lower = Closer/Bigger)
+                // Position is handled by CSS (transform: translateX)
+                globe.pointOfView({ lat: 20, lng: 80, altitude: 1.35 }); 
 
                 window.addEventListener('resize', () => {
                     globe.width(globeContainer.clientWidth);
