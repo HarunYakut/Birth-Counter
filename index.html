@@ -56,7 +56,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ou
 
 
 /* Color scheme context menu */
-.color-menu{position:fixed;z-index:200;background:rgba(10,12,25,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 0;min-width:200px;max-height:70vh;overflow-y:auto;backdrop-filter:blur(12px);display:none;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.color-menu{position:fixed;z-index:200;background:rgba(10,12,25,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 0;min-width:200px;backdrop-filter:blur(12px);display:none;box-shadow:0 8px 32px rgba(0,0,0,.6)}
 .color-menu.visible{display:block}
 .color-separator{height:1px;background:rgba(255,255,255,.06);margin:6px 0}
 .color-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:13px;color:rgba(255,255,255,.8);transition:background .15s}
@@ -199,96 +199,6 @@ const COLOR_SCHEMES = {
     border: 'rgba(30,130,230,0.35)',
     highlight: [255,255,255],
     label: 'Philips blue, white flash'
-  },
-  'Midnight Rose': {
-    land: 'rgba(120,30,70,0.9)',
-    border: 'rgba(160,50,90,0.35)',
-    highlight: [255,200,220],
-    label: 'Deep rose, pink flash'
-  },
-  'Solar Flare': {
-    land: 'rgba(200,80,20,0.9)',
-    border: 'rgba(240,120,40,0.3)',
-    highlight: [255,255,100],
-    label: 'Orange land, yellow flash'
-  },
-  'Deep Space': {
-    land: 'rgba(30,30,80,0.92)',
-    border: 'rgba(60,60,120,0.35)',
-    highlight: [100,200,255],
-    label: 'Navy land, ice flash'
-  },
-  'Forest Moss': {
-    land: 'rgba(60,90,30,0.9)',
-    border: 'rgba(90,120,50,0.35)',
-    highlight: [255,180,80],
-    label: 'Olive land, warm flash'
-  },
-  'Coral Reef': {
-    land: 'rgba(220,120,100,0.88)',
-    border: 'rgba(240,150,130,0.3)',
-    highlight: [50,220,200],
-    label: 'Coral land, aqua flash'
-  },
-  'Lavender Dusk': {
-    land: 'rgba(140,110,180,0.88)',
-    border: 'rgba(170,140,210,0.3)',
-    highlight: [255,220,100],
-    label: 'Lavender land, gold flash'
-  },
-  'Copper Bronze': {
-    land: 'rgba(160,100,50,0.9)',
-    border: 'rgba(190,130,70,0.35)',
-    highlight: [100,255,200],
-    label: 'Bronze land, mint flash'
-  },
-  'Ice Crystal': {
-    land: 'rgba(140,200,220,0.85)',
-    border: 'rgba(170,220,240,0.3)',
-    highlight: [255,100,150],
-    label: 'Ice blue, rose flash'
-  },
-  'Volcanic': {
-    land: 'rgba(60,30,30,0.92)',
-    border: 'rgba(100,40,30,0.4)',
-    highlight: [255,120,30],
-    label: 'Dark red, fire flash'
-  },
-  'Sakura': {
-    land: 'rgba(200,140,160,0.88)',
-    border: 'rgba(230,170,190,0.3)',
-    highlight: [255,255,255],
-    label: 'Pink land, white flash'
-  },
-  'Emerald Night': {
-    land: 'rgba(10,60,40,0.93)',
-    border: 'rgba(20,90,60,0.4)',
-    highlight: [0,255,150],
-    label: 'Dark green, neon flash'
-  },
-  'Sandstorm': {
-    land: 'rgba(190,170,120,0.88)',
-    border: 'rgba(210,190,140,0.3)',
-    highlight: [80,120,200],
-    label: 'Sand land, blue flash'
-  },
-  'Monochrome': {
-    land: 'rgba(140,140,140,0.9)',
-    border: 'rgba(180,180,180,0.3)',
-    highlight: [255,255,255],
-    label: 'Grey land, white flash'
-  },
-  'Turquoise Gold': {
-    land: 'rgba(30,150,140,0.9)',
-    border: 'rgba(50,180,170,0.3)',
-    highlight: [255,200,50],
-    label: 'Turquoise, gold flash'
-  },
-  'Blood Moon': {
-    land: 'rgba(150,30,30,0.9)',
-    border: 'rgba(190,50,40,0.35)',
-    highlight: [255,200,150],
-    label: 'Red land, warm flash'
   },
 };
 
@@ -541,7 +451,7 @@ const spaceMat = new THREE.ShaderMaterial({
       float dust2=smoothstep(0.42,0.58,fbm(ruvTex*vec2(6.0,22.0)+70.0));
       float dustLanes=dust1*0.5+dust2*0.3;
       
-      float rift=smoothstep(0.0,0.02,abs(ruv.y+0.005*sin(ruv.x*4.0)))*0.6+0.4;
+      float rift=1.0; // no sharp central divider
       
       // Deep purple colors
       vec3 mwWarm=vec3(0.10,0.04,0.13); // rich purple core
