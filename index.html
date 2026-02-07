@@ -1316,7 +1316,7 @@ function animate(time) {
   // Moon orbit: counter Earth spin + add moon's own orbit rate
   // This keeps the moon orbiting at its own speed independent of Earth rotation
   moonPivot.rotation.y -= rotationSpeed; // cancel Earth spin
-  moonPivot.rotation.y += MOON_ORBIT_SPEED / 60; // add moon orbit
+  moonPivot.rotation.y += (MOON_ORBIT_SPEED / 60) * (rotationSpeed / 0.002); // moon orbit scales with speed
   // Tidally locked rotation
   moonMesh.rotation.y = -moonPivot.rotation.y;
   
